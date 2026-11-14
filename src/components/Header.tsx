@@ -13,9 +13,12 @@ import {
   ChevronRight,
   Truck,
   Zap,
-  Settings
+  Settings,
+  User as UserIcon,
+  LogOut
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import { INITIAL_PRODUCTS } from '@/data/products';
 import { BRAND_CONFIG } from '@/config/brand';
 
@@ -24,9 +27,12 @@ function HeaderContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { totalItems, openCart, wishlist } = useCart();
+  const { user, isAuthenticated, isAdmin, openAuthModal, logout } = useAuth();
+  
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   // Active route/tab tracking to give customer crystal-clear visual feedback
   const currentType = searchParams.get('type');
@@ -69,10 +75,21 @@ function HeaderContent() {
               <Zap className="w-3.5 h-3.5 text-[#E7C875]" />
               <span>5% Off on UPI (Code: <strong className="text-white">UPI5</strong>)</span>
             </span>
-            <Link href="/admin" className="text-[#C29B38] hover:underline font-semibold flex items-center space-x-1">
-              <Settings className="w-3 h-3" />
-              <span>Admin</span>
-            </Link>
+            
+            {isAdmin ? (
+              <Link href="/admin" className="text-[#E7C875] hover:underline font-bold flex items-center space-x-1">
+                <Settings className="w-3 h-3" />
+                <span>Admin Portal</span>
+              </Link>
+            ) : (
+              <button
+                onClick={() => openAuthModal('admin')}
+                className="text-[#C29B38] hover:underline font-semibold flex items-center space-x-1 cursor-pointer"
+              >
+                <Settings className="w-3 h-3" />
+                <span>Admin Login</span>
+              </button>
+            )}
           </div>
         </div>
       </aside>
@@ -80,10 +97,10 @@ function HeaderContent() {
       {/* Main Header Navbar - Active Route Highlighting, Zero Overlap */}
       <header className="sticky top-0 z-40 bg-[#FAF8F5] border-b border-[#E8E2D8] shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20 gap-4 sm:gap-6">
+          <div className="flex items-center justify-between h-20 gap-3 sm:gap-6">
             
             {/* Left: Mobile Menu Toggle + Brand Logo + Seamless Desktop Nav */}
-            <div className="flex items-center gap-4 lg:gap-6 xl:gap-8 shrink-0">
+            <div className="flex items-center gap-3 sm:gap-4 lg:gap-6 xl:gap-8 shrink-0">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="p-2 -ml-2 text-[#1C201D] hover:text-[#1A3B2B] rounded-lg transition-colors lg:hidden"
@@ -191,7 +208,7 @@ function HeaderContent() {
               </nav>
             </div>
 
-            {/* Right: Actions (Search, Wishlist, Cart Bag) - Anchored cleanly to container margin */}
+            {/* Right: Actions (Search, Wishlist, User Account, Cart Bag) - Anchored cleanly */}
             <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
               {/* Search Toggle */}
               <button
@@ -220,6 +237,106 @@ function HeaderContent() {
                 )}
               </Link>
 
+              {/* User Account Dropdown */}
+              <div className="relative">
+                {isAuthenticated && user ? (
+                  <div className="relative">
+                    <button
+                      onClick={() => setUserMenuOpen(!userMenuOpen)}
+                      className={`flex items-center space-x-1.5 py-1.5 px-2.5 sm:px-3 rounded-full text-xs font-bold transition-all border shadow-xs ${
+                        isAdmin
+                          ? 'bg-rose-50 border-rose-300 text-rose-900 hover:bg-rose-100'
+                          : 'bg-[#FBF7EE] border-[#E8DFC9] text-[#1A3B2B] hover:border-[#C29B38]'
+                      }`}
+                    >
+                      <div className="w-5 h-5 rounded-full bg-[#1A3B2B] text-[#E7C875] flex items-center justify-center text-[10px] font-black">
+                        {user.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="hidden md:inline max-w-[70px] truncate">
+                        {user.name.split(' ')[0]}
+                      </span>
+                    </button>
+
+                    {userMenuOpen && (
+                      <div 
+                        className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-[#E8E2D8] p-2 z-50 animate-in fade-in zoom-in-95 duration-150"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <div className="p-3 border-b border-[#E8E2D8]">
+                          <p className="text-xs font-bold text-[#1C201D] truncate">{user.name}</p>
+                          <p className="text-[11px] text-[#5F6762] truncate">@{user.username}</p>
+                          <span className={`inline-block mt-1 text-[9px] uppercase font-bold px-2 py-0.5 rounded-full ${
+                            isAdmin ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'
+                          }`}>
+                            {isAdmin ? '👑 Store Admin' : '👤 Boutique Customer'}
+                          </span>
+                        </div>
+
+                        <div className="py-1">
+                          {isAdmin ? (
+                            <Link
+                              href="/admin"
+                              className="flex items-center space-x-2 px-3 py-2 text-xs font-semibold text-[#1C201D] hover:bg-[#FAF8F5] rounded-xl"
+                            >
+                              <Settings className="w-4 h-4 text-[#C29B38]" />
+                              <span>Store Admin Portal</span>
+                            </Link>
+                          ) : (
+                            <Link
+                              href="/account"
+                              className="flex items-center space-x-2 px-3 py-2 text-xs font-semibold text-[#1C201D] hover:bg-[#FAF8F5] rounded-xl"
+                            >
+                              <UserIcon className="w-4 h-4 text-[#C29B38]" />
+                              <span>My Account &amp; Orders</span>
+                            </Link>
+                          )}
+
+                          <Link
+                            href="/shop?filter=wishlist"
+                            className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-[#1C201D] hover:bg-[#FAF8F5] rounded-xl"
+                          >
+                            <span className="flex items-center space-x-2">
+                              <Heart className="w-4 h-4 text-[#C29B38]" />
+                              <span>My Wishlist</span>
+                            </span>
+                            <span className="text-[10px] bg-[#FAF8F5] border border-[#E8E2D8] px-1.5 py-0.5 rounded-full">
+                              {wishlist.length}
+                            </span>
+                          </Link>
+
+                          <button
+                            onClick={() => openAuthModal('customer')}
+                            className="w-full flex items-center space-x-2 px-3 py-2 text-xs font-semibold text-[#5F6762] hover:bg-[#FAF8F5] rounded-xl text-left"
+                          >
+                            <Sparkles className="w-4 h-4 text-[#C29B38]" />
+                            <span>Switch Account / Demo</span>
+                          </button>
+                        </div>
+
+                        <div className="pt-1 border-t border-[#E8E2D8]">
+                          <button
+                            onClick={logout}
+                            className="w-full flex items-center space-x-2 px-3 py-2 text-xs font-semibold text-[#9C3B24] hover:bg-rose-50 rounded-xl text-left"
+                          >
+                            <LogOut className="w-4 h-4" />
+                            <span>Sign Out</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => openAuthModal('customer')}
+                    className="flex items-center space-x-1.5 py-1.5 px-3 rounded-full text-xs font-bold text-[#1A3B2B] bg-[#FBF7EE] border border-[#E8DFC9] hover:border-[#C29B38] transition-colors shadow-xs"
+                    aria-label="Sign in to your account"
+                  >
+                    <UserIcon className="w-3.5 h-3.5 text-[#C29B38]" />
+                    <span className="hidden sm:inline">Sign In</span>
+                  </button>
+                )}
+              </div>
+
               {/* Cart Drawer Trigger */}
               <button
                 onClick={openCart}
@@ -236,9 +353,54 @@ function HeaderContent() {
           </div>
         </div>
 
-        {/* Mobile Navigation Drawer with Active Route Highlighting */}
+        {/* Mobile Navigation Drawer with Active Route Highlighting & User Info */}
         {mobileMenuOpen && (
           <div className="lg:hidden bg-[#FAF8F5] border-b border-[#E8E2D8] px-4 pt-3 pb-6 space-y-2 animate-in slide-in-from-top-2 duration-200">
+            {/* Mobile Account Card */}
+            <div className="bg-white p-3 rounded-2xl border border-[#E8E2D8] mb-3 flex items-center justify-between">
+              {isAuthenticated && user ? (
+                <div className="flex items-center space-x-3">
+                  <div className="w-9 h-9 rounded-xl bg-[#1A3B2B] text-[#E7C875] flex items-center justify-center font-bold text-sm">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-[#1C201D]">{user.name}</p>
+                    <p className="text-[10px] text-[#5F6762]">@{user.username} • {user.role === 'admin' ? 'Store Admin' : 'Customer'}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2 text-xs">
+                  <UserIcon className="w-4 h-4 text-[#C29B38]" />
+                  <span className="font-semibold text-[#1C201D]">Guest Shopper</span>
+                </div>
+              )}
+
+              {isAuthenticated ? (
+                <div className="flex items-center space-x-2">
+                  <Link
+                    href={isAdmin ? '/admin' : '/account'}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-[11px] font-bold text-[#1A3B2B] bg-[#FBF7EE] border border-[#E8DFC9] px-2.5 py-1 rounded-lg"
+                  >
+                    Dashboard
+                  </Link>
+                  <button
+                    onClick={() => { logout(); setMobileMenuOpen(false); }}
+                    className="text-[11px] font-bold text-rose-700 hover:underline"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => { openAuthModal('customer'); setMobileMenuOpen(false); }}
+                  className="bg-[#1A3B2B] text-white text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-xs"
+                >
+                  Sign In
+                </button>
+              )}
+            </div>
+
             <Link
               href="/"
               onClick={() => setMobileMenuOpen(false)}
@@ -310,14 +472,17 @@ function HeaderContent() {
             >
               Curated Trends
             </Link>
-            <Link
-              href="/admin"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center space-x-1.5 py-2.5 px-3 text-sm font-semibold text-[#C29B38] hover:bg-[#FBF7EE] rounded-xl"
-            >
-              <Settings className="w-4 h-4" />
-              <span>Store Admin Portal</span>
-            </Link>
+
+            {isAdmin && (
+              <Link
+                href="/admin"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center space-x-1.5 py-2.5 px-3 text-sm font-semibold text-[#C29B38] hover:bg-[#FBF7EE] rounded-xl"
+              >
+                <Settings className="w-4 h-4" />
+                <span>Store Admin Portal</span>
+              </Link>
+            )}
           </div>
         )}
       </header>

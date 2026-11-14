@@ -68,3 +68,22 @@ export interface Order {
   orderStatus: 'Confirmed' | 'Dispatched' | 'Out for Delivery' | 'Delivered';
   createdAt: string;
 }
+
+export type UserRole = 'customer' | 'admin';
+
+export interface User {
+  id: string;
+  username: string;
+  name: string;
+  email: string;
+  phone?: string;
+  role: UserRole;
+  address?: {
+    addressLine1: string;
+    addressLine2?: string;
+    city: string;
+    state: string;
+    pincode: string;
+  };
+  createdAt?: string;
+}

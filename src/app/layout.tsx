@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
+import { AuthProvider } from "@/context/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
+import AuthModal from "@/components/AuthModal";
 
 export const metadata: Metadata = {
   title: "VL Designs for you | Pure Kalyani Cottons & Handcrafted Ethnic Wear",
@@ -28,13 +30,16 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-[#FAF8F5] text-[#1C201D] font-sans antialiased selection:bg-[#C29B38] selection:text-white">
-        <CartProvider>
-          <Header />
-          <CartDrawer />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <FloatingWhatsApp />
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <Header />
+            <CartDrawer />
+            <AuthModal />
+            <main className="flex-1">{children}</main>
+            <Footer />
+            <FloatingWhatsApp />
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

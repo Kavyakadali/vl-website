@@ -1,0 +1,372 @@
+'use client';
+
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  X,
+  Lock,
+  User as UserIcon,
+  Mail,
+  Phone,
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle,
+  Sparkles,
+  ArrowRight,
+  Eye,
+  EyeOff
+} from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+
+export default function AuthModal() {
+  const router = useRouter();
+  const {
+    isAuthModalOpen,
+    closeAuthModal,
+    authModalTab,
+    setAuthModalTab,
+    login,
+    signup,
+    demoAccounts
+  } = useAuth();
+
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Signup fields
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  if (!isAuthModalOpen) return null;
+
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setIsLoading(true);
+
+    setTimeout(() => {
+      const res = login(username, password);
+      setIsLoading(false);
+      if (res.success) {
+        if (res.role === 'admin') {
+          router.push('/admin');
+        }
+      } else {
+        setErrorMessage(res.error || 'Login failed. Please check your credentials.');
+      }
+    }, 300);
+  };
+
+  const handleSignupSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setIsLoading(true);
+
+    setTimeout(() => {
+      const res = signup({ username, password, name, email, phone });
+      setIsLoading(false);
+      if (res.success) {
+        // Logged in automatically
+      } else {
+        setErrorMessage(res.error || 'Signup failed. Please try again.');
+      }
+    }, 300);
+  };
+
+  const handleQuickLogin = (demoUser: string, demoPass: string, role: string) => {
+    setUsername(demoUser);
+    setPassword(demoPass);
+    setErrorMessage('');
+    const res = login(demoUser, demoPass);
+    if (res.success && role === 'admin') {
+      router.push('/admin');
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+      <div 
+        className="relative w-full max-w-md bg-[#FAF8F5] rounded-3xl shadow-2xl border border-[#E8E2D8] overflow-hidden animate-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Top Header Banner */}
+        <div className="bg-[#1A3B2B] text-white px-6 py-5 flex items-center justify-between border-b border-[#2A5A43]">
+          <div className="flex items-center space-x-3">
+            <div className="w-9 h-9 rounded-xl bg-[#2A5A43] text-[#E7C875] flex items-center justify-center font-serif text-lg font-black border border-[#3A7256]">
+              VL
+            </div>
+            <div>
+              <h3 className="font-serif text-lg font-bold text-[#FAF8F5]">
+                {authModalTab === 'admin' ? 'Store Administrator Portal' : 'VL Designs Sign In'}
+              </h3>
+              <p className="text-[11px] text-[#D8D2C5]">
+                {authModalTab === 'admin' ? 'Authorized Boutique Staff Only' : 'Handcrafted Fashion for Women'}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={closeAuthModal}
+            className="p-1.5 text-neutral-300 hover:text-white rounded-full hover:bg-white/10 transition-colors"
+            aria-label="Close modal"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Tab Selection */}
+        <div className="flex border-b border-[#E8E2D8] bg-white px-6 pt-3">
+          <button
+            onClick={() => { setAuthModalTab('customer'); setErrorMessage(''); }}
+            className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all relative ${
+              authModalTab === 'customer'
+                ? 'text-[#1A3B2B]'
+                : 'text-[#7D8882] hover:text-[#1C201D]'
+            }`}
+          >
+            Customer Login
+            {authModalTab === 'customer' && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C29B38]" />
+            )}
+          </button>
+
+          <button
+            onClick={() => { setAuthModalTab('signup'); setErrorMessage(''); }}
+            className={`ml-6 pb-3 text-xs font-bold uppercase tracking-wider transition-all relative ${
+              authModalTab === 'signup'
+                ? 'text-[#1A3B2B]'
+                : 'text-[#7D8882] hover:text-[#1C201D]'
+            }`}
+          >
+            Create Account
+            {authModalTab === 'signup' && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C29B38]" />
+            )}
+          </button>
+
+          <button
+            onClick={() => { setAuthModalTab('admin'); setErrorMessage(''); }}
+            className={`ml-auto pb-3 text-xs font-bold uppercase tracking-wider transition-all relative flex items-center space-x-1 ${
+              authModalTab === 'admin'
+                ? 'text-[#9C3B24]'
+                : 'text-[#7D8882] hover:text-[#9C3B24]'
+            }`}
+          >
+            <Lock className="w-3 h-3" />
+            <span>Admin Portal</span>
+            {authModalTab === 'admin' && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#9C3B24]" />
+            )}
+          </button>
+        </div>
+
+        {/* Modal Body */}
+        <div className="p-6">
+          {/* Quick Demo Credentials Switcher */}
+          <div className="mb-5 bg-[#FBF7EE] p-3.5 rounded-2xl border border-[#E8DFC9]">
+            <p className="text-[11px] font-bold text-[#1A3B2B] flex items-center space-x-1.5 mb-2">
+              <Sparkles className="w-3.5 h-3.5 text-[#C29B38]" />
+              <span>Quick 1-Click Demo Login:</span>
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {demoAccounts.map((acc) => (
+                <button
+                  key={acc.username}
+                  type="button"
+                  onClick={() => handleQuickLogin(acc.username, acc.pass, acc.role)}
+                  className={`text-left p-2 rounded-xl text-[11px] border transition-all ${
+                    acc.role === 'admin'
+                      ? 'bg-rose-50 border-rose-200 text-rose-900 hover:bg-rose-100 font-semibold'
+                      : 'bg-white border-[#E8E2D8] text-[#1C201D] hover:border-[#1A3B2B]'
+                  }`}
+                >
+                  <span className="block font-bold">{acc.label}</span>
+                  <span className="text-[10px] text-[#5F6762]">{acc.username} / {acc.pass}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Error Notice */}
+          {errorMessage && (
+            <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl flex items-center space-x-2 animate-in fade-in">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
+          {/* Form Content */}
+          {authModalTab === 'signup' ? (
+            <form onSubmit={handleSignupSubmit} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-semibold text-[#1C201D] mb-1">Full Name</label>
+                <div className="relative">
+                  <UserIcon className="w-4 h-4 text-[#7D8882] absolute left-3 top-3" />
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Ananya Rao"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full bg-white border border-[#D8D2C5] rounded-xl pl-9 pr-3 py-2 text-xs text-[#1C201D] outline-none focus:border-[#1A3B2B]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#1C201D] mb-1">Username</label>
+                <div className="relative">
+                  <UserIcon className="w-4 h-4 text-[#7D8882] absolute left-3 top-3" />
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. ananya_rao"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full bg-white border border-[#D8D2C5] rounded-xl pl-9 pr-3 py-2 text-xs text-[#1C201D] outline-none focus:border-[#1A3B2B]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-[#1C201D] mb-1">Email</label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-[#7D8882] absolute left-3 top-3" />
+                    <input
+                      type="email"
+                      required
+                      placeholder="name@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full bg-white border border-[#D8D2C5] rounded-xl pl-9 pr-3 py-2 text-xs text-[#1C201D] outline-none focus:border-[#1A3B2B]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#1C201D] mb-1">Mobile (Optional)</label>
+                  <div className="relative">
+                    <Phone className="w-4 h-4 text-[#7D8882] absolute left-3 top-3" />
+                    <input
+                      type="tel"
+                      placeholder="10-digit mobile"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                      className="w-full bg-white border border-[#D8D2C5] rounded-xl pl-9 pr-3 py-2 text-xs text-[#1C201D] outline-none focus:border-[#1A3B2B]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#1C201D] mb-1">Create Password</label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-[#7D8882] absolute left-3 top-3" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    placeholder="Min 6 characters"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full bg-white border border-[#D8D2C5] rounded-xl pl-9 pr-10 py-2 text-xs text-[#1C201D] outline-none focus:border-[#1A3B2B]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-2.5 text-[#7D8882] hover:text-[#1C201D]"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full mt-2 bg-[#1A3B2B] text-white py-2.5 rounded-xl text-xs font-bold hover:bg-[#2A5A43] transition-all shadow-md flex items-center justify-center space-x-2"
+              >
+                <span>{isLoading ? 'Creating Account...' : 'Complete Registration'}</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleLoginSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-[#1C201D] mb-1">
+                  {authModalTab === 'admin' ? 'Admin Username' : 'Username or Email'}
+                </label>
+                <div className="relative">
+                  <UserIcon className="w-4 h-4 text-[#7D8882] absolute left-3 top-3" />
+                  <input
+                    type="text"
+                    required
+                    placeholder={authModalTab === 'admin' ? 'admin' : 'e.g. kavya or priya'}
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full bg-white border border-[#D8D2C5] rounded-xl pl-9 pr-3 py-2 text-xs text-[#1C201D] outline-none focus:border-[#1A3B2B]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-xs font-semibold text-[#1C201D]">
+                    Password
+                  </label>
+                  <span className="text-[10px] text-[#7D8882]">
+                    Default: {authModalTab === 'admin' ? 'admin123' : 'user123'}
+                  </span>
+                </div>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-[#7D8882] absolute left-3 top-3" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full bg-white border border-[#D8D2C5] rounded-xl pl-9 pr-10 py-2 text-xs text-[#1C201D] outline-none focus:border-[#1A3B2B]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-2.5 text-[#7D8882] hover:text-[#1C201D]"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-2 text-white ${
+                  authModalTab === 'admin'
+                    ? 'bg-[#9C3B24] hover:bg-[#802F1C]'
+                    : 'bg-[#1A3B2B] hover:bg-[#2A5A43]'
+                }`}
+              >
+                <span>{isLoading ? 'Verifying...' : authModalTab === 'admin' ? 'Login to Admin Dashboard' : 'Sign In to Account'}</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </form>
+          )}
+
+          {/* Privacy & Security Note */}
+          <div className="mt-5 pt-4 border-t border-[#E8E2D8] flex items-center justify-between text-[11px] text-[#7D8882]">
+            <span className="flex items-center space-x-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#1A3B2B]" />
+              <span>Multi-User Verified Session</span>
+            </span>
+            <span>VL Designs • 2026</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

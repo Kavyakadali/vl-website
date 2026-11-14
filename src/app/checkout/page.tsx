@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -15,9 +15,11 @@ import {
   Sparkles,
   HelpCircle,
   MessageCircle,
-  AlertCircle
+  AlertCircle,
+  User as UserIcon
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import { BRAND_CONFIG } from '@/config/brand';
 
 export default function CheckoutPage() {
@@ -30,6 +32,7 @@ export default function CheckoutPage() {
     discountAmount,
     clearCart,
   } = useCart();
+  const { user, isAuthenticated, openAuthModal } = useAuth();
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -41,6 +44,23 @@ export default function CheckoutPage() {
     state: 'Tamil Nadu',
     pincode: '',
   });
+
+  // Pre-fill user data when logged in
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: user.name || prev.fullName,
+        phone: user.phone || prev.phone,
+        email: user.email || prev.email,
+        addressLine1: user.address?.addressLine1 || prev.addressLine1,
+        addressLine2: user.address?.addressLine2 || prev.addressLine2,
+        city: user.address?.city || prev.city,
+        state: user.address?.state || prev.state,
+        pincode: user.address?.pincode || prev.pincode,
+      }));
+    }
+  }, [user]);
 
   // Default and only active instant payment method is Cash on Delivery
   const [paymentMethod, setPaymentMethod] = useState<'cod'>('cod');
@@ -169,6 +189,35 @@ export default function CheckoutPage() {
           
           {/* Left Column: Delivery & Payment Details */}
           <div className="lg:col-span-7 space-y-6">
+
+            {/* Logged in / Guest Banner */}
+            <div className="bg-[#FBF7EE] p-4 rounded-2xl border border-[#E8DFC9] flex items-center justify-between text-xs">
+              {isAuthenticated && user ? (
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-[#1A3B2B] text-[#E7C875] flex items-center justify-center font-bold text-xs shadow-xs">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <span className="font-bold text-[#1C201D] block">Ordering as {user.name} ({user.email})</span>
+                    <span className="text-[11px] text-[#5F6762]">Delivery address auto-filled from your profile</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-2">
+                  <div className="flex items-center space-x-2">
+                    <Sparkles className="w-4 h-4 text-[#C29B38] shrink-0" />
+                    <span className="text-[#1C201D]">Already have a VL Designs account?</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openAuthModal('customer')}
+                    className="font-bold text-[#1A3B2B] bg-white border border-[#E8DFC9] px-3 py-1.5 rounded-lg hover:border-[#1A3B2B] text-xs transition-colors self-start sm:self-auto"
+                  >
+                    Sign In for 1-Click Fill
+                  </button>
+                </div>
+              )}
+            </div>
             
             {/* Step 1: Contact Details */}
             <div className="bg-white p-6 rounded-2xl border border-[#E8E2D8] shadow-xs space-y-4">
