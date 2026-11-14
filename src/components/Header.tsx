@@ -68,7 +68,7 @@ export default function Header() {
           <div className="flex items-center justify-between h-20 gap-4 sm:gap-6">
             
             {/* Left: Mobile Menu Toggle + Brand Logo + Seamless Desktop Nav */}
-            <div className="flex items-center gap-4 lg:gap-6 xl:gap-8 min-w-0">
+            <div className="flex items-center gap-4 lg:gap-6 xl:gap-8 shrink-0">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="p-2 -ml-2 text-[#1C201D] hover:text-[#1A3B2B] rounded-lg transition-colors lg:hidden"
@@ -94,8 +94,8 @@ export default function Header() {
               {/* Elegant Accent Divider */}
               <div className="hidden xl:block h-6 w-px bg-[#E8E2D8]" />
 
-              {/* Primary Navigation Links (Aligned naturally after logo - zero dead space, single row) */}
-              <nav className="hidden lg:flex items-center gap-3.5 xl:gap-6 text-xs xl:text-[13px] font-semibold text-[#1C201D] whitespace-nowrap">
+              {/* Primary Navigation Links (Single row, generous spacing, zero overlap) */}
+              <nav className="hidden lg:flex items-center gap-4 xl:gap-6 text-xs xl:text-[13px] font-semibold text-[#1C201D] whitespace-nowrap">
                 <Link href="/" className="hover:text-[#1A3B2B] transition-colors py-1">
                   Home
                 </Link>
@@ -118,10 +118,6 @@ export default function Header() {
 
                 <Link href="/shop?category=Unstitched+Suit+Material" className="hover:text-[#1A3B2B] transition-colors py-1">
                   Suit Materials
-                </Link>
-
-                <Link href="/shop?category=Cotton+Sarees" className="hover:text-[#1A3B2B] transition-colors py-1">
-                  Cotton Sarees
                 </Link>
 
                 <Link href="/shop?type=resold" className="hover:text-[#1A3B2B] transition-colors text-[#5F6762] py-1">
