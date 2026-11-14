@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import {
   ShoppingBag,
   Heart,
@@ -19,12 +19,27 @@ import { useCart } from '@/context/CartContext';
 import { INITIAL_PRODUCTS } from '@/data/products';
 import { BRAND_CONFIG } from '@/config/brand';
 
-export default function Header() {
+function HeaderContent() {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { totalItems, openCart, wishlist } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Active route/tab tracking to give customer crystal-clear visual feedback
+  const currentType = searchParams.get('type');
+  const currentCategory = searchParams.get('category');
+  const currentFilter = searchParams.get('filter');
+
+  const isHomeActive = pathname === '/';
+  const isAllCollectionsActive = pathname === '/shop' && !currentType && !currentCategory && !currentFilter;
+  const isOurDesignsActive = pathname === '/shop' && currentType === 'own_design';
+  const isDressesActive = pathname === '/shop' && currentCategory === 'Kurtis & Sets';
+  const isSuitsActive = pathname === '/shop' && currentCategory === 'Unstitched Suit Material';
+  const isCuratedActive = pathname === '/shop' && currentType === 'resold';
+  const isWishlistActive = pathname === '/shop' && currentFilter === 'wishlist';
 
   const searchResults = searchQuery.trim()
     ? INITIAL_PRODUCTS.filter(p =>
@@ -36,7 +51,7 @@ export default function Header() {
 
   return (
     <>
-      {/* Top Announcement Bar - Perfectly Balanced */}
+      {/* Top Announcement Bar - Pixel-Perfect Alignment */}
       <aside aria-label="Store Announcements" className="bg-[#1A3B2B] text-[#FAF8F5] text-xs py-2 border-b border-[#2A5A43]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -62,7 +77,7 @@ export default function Header() {
         </div>
       </aside>
 
-      {/* Main Header Navbar - Unified, Zero Waste Space, No Overflow */}
+      {/* Main Header Navbar - Active Route Highlighting, Zero Overlap */}
       <header className="sticky top-0 z-40 bg-[#FAF8F5] border-b border-[#E8E2D8] shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20 gap-4 sm:gap-6">
@@ -94,34 +109,84 @@ export default function Header() {
               {/* Elegant Accent Divider */}
               <div className="hidden xl:block h-6 w-px bg-[#E8E2D8]" />
 
-              {/* Primary Navigation Links (Single row, generous spacing, zero overlap) */}
-              <nav className="hidden lg:flex items-center gap-4 xl:gap-6 text-xs xl:text-[13px] font-semibold text-[#1C201D] whitespace-nowrap">
-                <Link href="/" className="hover:text-[#1A3B2B] transition-colors py-1">
-                  Home
+              {/* Primary Navigation Links with Clear Active Tab Highlighting */}
+              <nav className="hidden lg:flex items-center gap-4 xl:gap-6 text-xs xl:text-[13px] font-semibold whitespace-nowrap">
+                {/* Home */}
+                <Link
+                  href="/"
+                  className={`relative py-1.5 transition-colors ${
+                    isHomeActive ? 'text-[#1A3B2B] font-bold' : 'text-[#5F6762] hover:text-[#1A3B2B]'
+                  }`}
+                >
+                  <span>Home</span>
+                  {isHomeActive && (
+                    <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#C29B38] rounded-full animate-in fade-in duration-200" />
+                  )}
                 </Link>
                 
-                <Link href="/shop" className="hover:text-[#1A3B2B] transition-colors py-1">
-                  All Collections
+                {/* All Collections */}
+                <Link
+                  href="/shop"
+                  className={`relative py-1.5 transition-colors ${
+                    isAllCollectionsActive ? 'text-[#1A3B2B] font-bold' : 'text-[#5F6762] hover:text-[#1A3B2B]'
+                  }`}
+                >
+                  <span>All Collections</span>
+                  {isAllCollectionsActive && (
+                    <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#C29B38] rounded-full animate-in fade-in duration-200" />
+                  )}
                 </Link>
 
+                {/* Our Designs - Special Badge with Active State */}
                 <Link 
                   href="/shop?type=own_design" 
-                  className="flex items-center space-x-1.5 text-[#1A3B2B] hover:text-[#C29B38] transition-colors bg-[#FBF7EE] px-2.5 py-1 rounded-full border border-[#E8DFC9] shadow-xs"
+                  className={`flex items-center space-x-1.5 px-3 py-1 rounded-full transition-all ${
+                    isOurDesignsActive
+                      ? 'bg-[#1A3B2B] text-[#E7C875] border border-[#1A3B2B] shadow-sm font-bold ring-2 ring-[#C29B38]/30'
+                      : 'text-[#1A3B2B] hover:text-[#C29B38] bg-[#FBF7EE] border border-[#E8DFC9] shadow-xs hover:border-[#C29B38]'
+                  }`}
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-[#C29B38]" />
+                  <Sparkles className={`w-3.5 h-3.5 ${isOurDesignsActive ? 'text-[#E7C875]' : 'text-[#C29B38]'}`} />
                   <span>Our Designs</span>
                 </Link>
 
-                <Link href="/shop?category=Kurtis+%26+Sets" className="hover:text-[#1A3B2B] transition-colors py-1">
-                  Dresses &amp; Co-Ords
+                {/* Dresses & Co-Ords */}
+                <Link
+                  href="/shop?category=Kurtis+%26+Sets"
+                  className={`relative py-1.5 transition-colors ${
+                    isDressesActive ? 'text-[#1A3B2B] font-bold' : 'text-[#5F6762] hover:text-[#1A3B2B]'
+                  }`}
+                >
+                  <span>Dresses &amp; Co-Ords</span>
+                  {isDressesActive && (
+                    <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#C29B38] rounded-full animate-in fade-in duration-200" />
+                  )}
                 </Link>
 
-                <Link href="/shop?category=Unstitched+Suit+Material" className="hover:text-[#1A3B2B] transition-colors py-1">
-                  Suit Materials
+                {/* Suit Materials */}
+                <Link
+                  href="/shop?category=Unstitched+Suit+Material"
+                  className={`relative py-1.5 transition-colors ${
+                    isSuitsActive ? 'text-[#1A3B2B] font-bold' : 'text-[#5F6762] hover:text-[#1A3B2B]'
+                  }`}
+                >
+                  <span>Suit Materials</span>
+                  {isSuitsActive && (
+                    <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#C29B38] rounded-full animate-in fade-in duration-200" />
+                  )}
                 </Link>
 
-                <Link href="/shop?type=resold" className="hover:text-[#1A3B2B] transition-colors text-[#5F6762] py-1">
-                  Curated Trends
+                {/* Curated Trends */}
+                <Link
+                  href="/shop?type=resold"
+                  className={`relative py-1.5 transition-colors ${
+                    isCuratedActive ? 'text-[#1A3B2B] font-bold' : 'text-[#5F6762] hover:text-[#1A3B2B]'
+                  }`}
+                >
+                  <span>Curated Trends</span>
+                  {isCuratedActive && (
+                    <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#C29B38] rounded-full animate-in fade-in duration-200" />
+                  )}
                 </Link>
               </nav>
             </div>
@@ -137,13 +202,17 @@ export default function Header() {
                 <Search className="w-5 h-5" />
               </button>
 
-              {/* Wishlist Link */}
+              {/* Wishlist Link - Shows active highlight when on /shop?filter=wishlist */}
               <Link
                 href="/shop?filter=wishlist"
-                className="relative p-2 text-[#1C201D] hover:text-[#1A3B2B] hover:bg-[#F2ECE1] rounded-full transition-colors"
+                className={`relative p-2 rounded-full transition-colors ${
+                  isWishlistActive
+                    ? 'text-[#C29B38] bg-[#FBF7EE] border border-[#E8DFC9] shadow-xs'
+                    : 'text-[#1C201D] hover:text-[#1A3B2B] hover:bg-[#F2ECE1]'
+                }`}
                 aria-label="View wishlist"
               >
-                <Heart className="w-5 h-5" />
+                <Heart className={`w-5 h-5 ${isWishlistActive ? 'fill-[#C29B38] text-[#C29B38]' : ''}`} />
                 {wishlist.length > 0 && (
                   <span className="absolute top-1 right-1 bg-[#C29B38] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                     {wishlist.length}
@@ -167,30 +236,38 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Navigation Drawer */}
+        {/* Mobile Navigation Drawer with Active Route Highlighting */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-[#FAF8F5] border-b border-[#E8E2D8] px-4 pt-3 pb-6 space-y-3 animate-in slide-in-from-top-2 duration-200">
+          <div className="lg:hidden bg-[#FAF8F5] border-b border-[#E8E2D8] px-4 pt-3 pb-6 space-y-2 animate-in slide-in-from-top-2 duration-200">
             <Link
               href="/"
               onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 text-base font-medium text-[#1C201D] border-b border-[#E8E2D8]"
+              className={`block py-2.5 px-3 rounded-xl text-sm font-semibold transition-colors ${
+                isHomeActive ? 'bg-[#1A3B2B] text-white' : 'text-[#1C201D] hover:bg-neutral-100'
+              }`}
             >
               Home
             </Link>
             <Link
               href="/shop"
               onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 text-base font-medium text-[#1C201D] border-b border-[#E8E2D8]"
+              className={`block py-2.5 px-3 rounded-xl text-sm font-semibold transition-colors ${
+                isAllCollectionsActive ? 'bg-[#1A3B2B] text-white' : 'text-[#1C201D] hover:bg-neutral-100'
+              }`}
             >
               All Collections
             </Link>
             <Link
               href="/shop?type=own_design"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-between py-2.5 text-base font-semibold text-[#1A3B2B] bg-[#FBF7EE] px-3.5 rounded-xl border border-[#E8DFC9]"
+              className={`flex items-center justify-between py-2.5 px-3.5 rounded-xl border transition-colors ${
+                isOurDesignsActive
+                  ? 'bg-[#1A3B2B] text-white border-[#1A3B2B] font-bold'
+                  : 'text-[#1A3B2B] bg-[#FBF7EE] border-[#E8DFC9] font-semibold'
+              }`}
             >
               <span className="flex items-center space-x-2">
-                <Sparkles className="w-4 h-4 text-[#C29B38]" />
+                <Sparkles className={`w-4 h-4 ${isOurDesignsActive ? 'text-[#E7C875]' : 'text-[#C29B38]'}`} />
                 <span>Our Designed Outfits</span>
               </span>
               <ChevronRight className="w-4 h-4" />
@@ -198,35 +275,45 @@ export default function Header() {
             <Link
               href="/shop?category=Kurtis+%26+Sets"
               onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 text-base font-medium text-[#1C201D] border-b border-[#E8E2D8]"
+              className={`block py-2.5 px-3 rounded-xl text-sm font-semibold transition-colors ${
+                isDressesActive ? 'bg-[#1A3B2B] text-white' : 'text-[#1C201D] hover:bg-neutral-100'
+              }`}
             >
               Women&apos;s Dresses &amp; Co-Ords
             </Link>
             <Link
               href="/shop?category=Unstitched+Suit+Material"
               onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 text-base font-medium text-[#1C201D] border-b border-[#E8E2D8]"
+              className={`block py-2.5 px-3 rounded-xl text-sm font-semibold transition-colors ${
+                isSuitsActive ? 'bg-[#1A3B2B] text-white' : 'text-[#1C201D] hover:bg-neutral-100'
+              }`}
             >
               Suit Materials &amp; Cuts
             </Link>
             <Link
               href="/shop?category=Cotton+Sarees"
               onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 text-base font-medium text-[#1C201D] border-b border-[#E8E2D8]"
+              className={`block py-2.5 px-3 rounded-xl text-sm font-semibold transition-colors ${
+                pathname === '/shop' && currentCategory === 'Cotton Sarees'
+                  ? 'bg-[#1A3B2B] text-white'
+                  : 'text-[#1C201D] hover:bg-neutral-100'
+              }`}
             >
               Traditional Cotton Sarees
             </Link>
             <Link
               href="/shop?type=resold"
               onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 text-base font-medium text-[#5F6762] border-b border-[#E8E2D8]"
+              className={`block py-2.5 px-3 rounded-xl text-sm font-semibold transition-colors ${
+                isCuratedActive ? 'bg-[#1A3B2B] text-white' : 'text-[#5F6762] hover:bg-neutral-100'
+              }`}
             >
               Curated Trends
             </Link>
             <Link
               href="/admin"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center space-x-1.5 py-2 text-sm font-semibold text-[#C29B38]"
+              className="flex items-center space-x-1.5 py-2.5 px-3 text-sm font-semibold text-[#C29B38] hover:bg-[#FBF7EE] rounded-xl"
             >
               <Settings className="w-4 h-4" />
               <span>Store Admin Portal</span>
@@ -316,5 +403,15 @@ export default function Header() {
         </div>
       )}
     </>
+  );
+}
+
+export default function Header() {
+  return (
+    <Suspense fallback={
+      <header className="sticky top-0 z-40 bg-[#FAF8F5] border-b border-[#E8E2D8] h-20 shadow-xs" />
+    }>
+      <HeaderContent />
+    </Suspense>
   );
 }

@@ -1,22 +1,37 @@
 'use client';
 
-import React, { useState, useMemo, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Filter, SlidersHorizontal, Sparkles, X, ChevronDown, Check } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 import { INITIAL_PRODUCTS } from '@/data/products';
 import { ProductType } from '@/types';
+import { useCart } from '@/context/CartContext';
 
 function ShopContent() {
+  const { wishlist } = useCart();
   const searchParams = useSearchParams();
   const initialType = searchParams.get('type') as ProductType | null;
   const initialCategory = searchParams.get('category');
+  const initialFilter = searchParams.get('filter');
 
   const [selectedType, setSelectedType] = useState<string>(initialType || 'all');
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory || 'all');
+  const [isWishlistOnly, setIsWishlistOnly] = useState<boolean>(initialFilter === 'wishlist');
   const [sortBy, setSortBy] = useState<string>('featured');
   const [maxPrice, setMaxPrice] = useState<number>(3500);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  // Sync state whenever URL query params change (from navbar clicks or browser navigation)
+  useEffect(() => {
+    const typeParam = searchParams.get('type') as ProductType | null;
+    const catParam = searchParams.get('category');
+    const filterParam = searchParams.get('filter');
+
+    setSelectedType(typeParam || 'all');
+    setSelectedCategory(catParam || 'all');
+    setIsWishlistOnly(filterParam === 'wishlist');
+  }, [searchParams]);
 
   const categories = [
     'All Categories',
@@ -28,6 +43,10 @@ function ShopContent() {
 
   const filteredProducts = useMemo(() => {
     return INITIAL_PRODUCTS.filter((product) => {
+      // Wishlist filter
+      if (isWishlistOnly && !wishlist.includes(product.id)) {
+        return false;
+      }
       // Type filter
       if (selectedType !== 'all' && product.productType !== selectedType) {
         return false;
@@ -47,14 +66,39 @@ function ShopContent() {
       if (sortBy === 'rating') return b.rating - a.rating;
       return 0; // default featured
     });
-  }, [selectedType, selectedCategory, maxPrice, sortBy]);
+  }, [selectedType, selectedCategory, isWishlistOnly, wishlist, maxPrice, sortBy]);
 
   const resetFilters = () => {
     setSelectedType('all');
     setSelectedCategory('all');
+    setIsWishlistOnly(false);
     setMaxPrice(3500);
     setSortBy('featured');
   };
+
+  // Dynamic titles to give clear customer feedback on active view
+  let pageTitle = "All Collections";
+  let pageSubtitle = `Showing ${filteredProducts.length} handcrafted pieces and curated selections`;
+
+  if (isWishlistOnly) {
+    pageTitle = "My Saved Wishlist";
+    pageSubtitle = `Showing ${filteredProducts.length} items you loved and saved for later`;
+  } else if (selectedType === 'own_design') {
+    pageTitle = "In-House Handcrafted Outfits";
+    pageSubtitle = `Showing ${filteredProducts.length} original pieces designed and tailored by VL Studio`;
+  } else if (selectedType === 'resold') {
+    pageTitle = "Curated Trends";
+    pageSubtitle = `Showing ${filteredProducts.length} handpicked trending cuts and loom materials`;
+  } else if (selectedCategory === 'Kurtis & Sets') {
+    pageTitle = "Dresses & Co-Ords";
+    pageSubtitle = `Showing ${filteredProducts.length} breathable tiered dresses and daily wear sets`;
+  } else if (selectedCategory === 'Unstitched Suit Material') {
+    pageTitle = "Unstitched Suit Materials";
+    pageSubtitle = `Showing ${filteredProducts.length} pure Kalyani cotton sets with Mal Mal dupatta`;
+  } else if (selectedCategory === 'Cotton Sarees') {
+    pageTitle = "Traditional Cotton Sarees";
+    pageSubtitle = `Showing ${filteredProducts.length} temple border and Cham Cham cotton sarees`;
+  }
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] py-8 sm:py-12">
@@ -68,10 +112,10 @@ function ShopContent() {
               <span>Authentic Indian Weaves</span>
             </div>
             <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#1A3B2B]">
-              All Collections
+              {pageTitle}
             </h1>
             <p className="text-xs sm:text-sm text-[#5F6762] mt-1">
-              Showing {filteredProducts.length} handcrafted pieces and curated selections
+              {pageSubtitle}
             </p>
           </div>
 
