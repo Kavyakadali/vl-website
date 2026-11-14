@@ -10,7 +10,6 @@ import {
   Phone,
   ShieldCheck,
   AlertCircle,
-  Sparkles,
   ArrowRight,
   Eye,
   EyeOff
@@ -19,9 +18,9 @@ import { useAuth } from '@/context/AuthContext';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, isAuthenticated, isAdmin, login, signup, demoAccounts } = useAuth();
+  const { user, isAuthenticated, isAdmin, login, signup } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'customer' | 'admin' | 'signup'>('customer');
+  const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -43,10 +42,10 @@ export default function LoginPage() {
             {user.name.charAt(0).toUpperCase()}
           </div>
           <h2 className="font-serif text-2xl font-bold text-[#1A3B2B]">
-            You are logged in as {user.name}
+            Welcome Back, {user.name}
           </h2>
           <p className="text-xs text-[#5F6762]">
-            Role: <strong>{user.role === 'admin' ? 'Store Administrator' : 'Customer'}</strong> (@{user.username})
+            You are signed in as <strong>@{user.username}</strong>
           </p>
           <div className="pt-2 flex flex-col gap-2">
             <Link
@@ -59,7 +58,7 @@ export default function LoginPage() {
               href="/"
               className="bg-white border border-[#D8D2C5] text-[#1C201D] py-2 rounded-xl text-xs font-semibold hover:border-[#1A3B2B]"
             >
-              Continue to Storefront
+              Continue Shopping
             </Link>
           </div>
         </div>
@@ -82,7 +81,7 @@ export default function LoginPage() {
           router.push('/account');
         }
       } else {
-        setErrorMessage(res.error || 'Invalid credentials. Please verify and try again.');
+        setErrorMessage(res.error || 'Incorrect username or password. Please try again.');
       }
     }, 300);
   };
@@ -98,20 +97,9 @@ export default function LoginPage() {
       if (res.success) {
         router.push('/account');
       } else {
-        setErrorMessage(res.error || 'Signup failed. Please try again.');
+        setErrorMessage(res.error || 'Registration failed. Please check your information.');
       }
     }, 300);
-  };
-
-  const handleQuickLogin = (demoUser: string, demoPass: string, role: string) => {
-    setUsername(demoUser);
-    setPassword(demoPass);
-    setErrorMessage('');
-    const res = login(demoUser, demoPass);
-    if (res.success) {
-      if (role === 'admin') router.push('/admin');
-      else router.push('/account');
-    }
   };
 
   return (
@@ -124,25 +112,25 @@ export default function LoginPage() {
             VL
           </div>
           <h1 className="font-serif text-2xl font-bold tracking-wide">
-            {activeTab === 'admin' ? 'Store Administrator Portal' : 'VL Designs Sign In'}
+            {activeTab === 'signup' ? 'Create Your Account' : 'Sign In to VL Designs'}
           </h1>
           <p className="text-xs text-[#D8D2C5] mt-1">
-            {activeTab === 'admin' ? 'Secure Staff Management Gateway' : 'Sign in to access your orders & personal boutique'}
+            {activeTab === 'signup' ? 'Join to track orders and save your favorites' : 'Enter your credentials to access your personal boutique'}
           </p>
         </div>
 
         {/* Tab Selection */}
         <div className="flex border-b border-[#E8E2D8] bg-[#FAF8F5] px-6 pt-3">
           <button
-            onClick={() => { setActiveTab('customer'); setErrorMessage(''); }}
+            onClick={() => { setActiveTab('signin'); setErrorMessage(''); }}
             className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all relative ${
-              activeTab === 'customer'
+              activeTab === 'signin'
                 ? 'text-[#1A3B2B]'
                 : 'text-[#7D8882] hover:text-[#1C201D]'
             }`}
           >
-            Customer Login
-            {activeTab === 'customer' && (
+            Sign In
+            {activeTab === 'signin' && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C29B38]" />
             )}
           </button>
@@ -160,50 +148,10 @@ export default function LoginPage() {
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C29B38]" />
             )}
           </button>
-
-          <button
-            onClick={() => { setActiveTab('admin'); setErrorMessage(''); }}
-            className={`ml-auto pb-3 text-xs font-bold uppercase tracking-wider transition-all relative flex items-center space-x-1 ${
-              activeTab === 'admin'
-                ? 'text-[#9C3B24]'
-                : 'text-[#7D8882] hover:text-[#9C3B24]'
-            }`}
-          >
-            <Lock className="w-3 h-3" />
-            <span>Admin</span>
-            {activeTab === 'admin' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#9C3B24]" />
-            )}
-          </button>
         </div>
 
         {/* Form Body */}
         <div className="p-6">
-          {/* Quick Demo Credentials Switcher */}
-          <div className="mb-5 bg-[#FBF7EE] p-3.5 rounded-2xl border border-[#E8DFC9]">
-            <p className="text-[11px] font-bold text-[#1A3B2B] flex items-center space-x-1.5 mb-2">
-              <Sparkles className="w-3.5 h-3.5 text-[#C29B38]" />
-              <span>Quick 1-Click Demo Logins:</span>
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {demoAccounts.map((acc) => (
-                <button
-                  key={acc.username}
-                  type="button"
-                  onClick={() => handleQuickLogin(acc.username, acc.pass, acc.role)}
-                  className={`text-left p-2 rounded-xl text-[11px] border transition-all ${
-                    acc.role === 'admin'
-                      ? 'bg-rose-50 border-rose-200 text-rose-900 hover:bg-rose-100 font-semibold'
-                      : 'bg-white border-[#E8E2D8] text-[#1C201D] hover:border-[#1A3B2B]'
-                  }`}
-                >
-                  <span className="block font-bold">{acc.label}</span>
-                  <span className="text-[10px] text-[#5F6762]">{acc.username} / {acc.pass}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Error Notice */}
           {errorMessage && (
             <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl flex items-center space-x-2">
@@ -221,7 +169,7 @@ export default function LoginPage() {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Ananya Rao"
+                    placeholder="e.g. Kavya Kadali"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full bg-[#FAF8F5] border border-[#D8D2C5] rounded-xl pl-9 pr-3 py-2 text-xs text-[#1C201D] outline-none focus:border-[#1A3B2B]"
@@ -236,7 +184,7 @@ export default function LoginPage() {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. ananya_rao"
+                    placeholder="Choose a username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     className="w-full bg-[#FAF8F5] border border-[#D8D2C5] rounded-xl pl-9 pr-3 py-2 text-xs text-[#1C201D] outline-none focus:border-[#1A3B2B]"
@@ -276,7 +224,7 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#1C201D] mb-1">Create Password</label>
+                <label className="block text-xs font-semibold text-[#1C201D] mb-1">Password</label>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-[#7D8882] absolute left-3 top-3" />
                   <input
@@ -310,14 +258,14 @@ export default function LoginPage() {
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-[#1C201D] mb-1">
-                  {activeTab === 'admin' ? 'Admin Username' : 'Username or Email'}
+                  Username or Email
                 </label>
                 <div className="relative">
                   <UserIcon className="w-4 h-4 text-[#7D8882] absolute left-3 top-3" />
                   <input
                     type="text"
                     required
-                    placeholder={activeTab === 'admin' ? 'admin' : 'e.g. kavya or priya'}
+                    placeholder="Enter your username or email"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     className="w-full bg-[#FAF8F5] border border-[#D8D2C5] rounded-xl pl-9 pr-3 py-2 text-xs text-[#1C201D] outline-none focus:border-[#1A3B2B]"
@@ -326,14 +274,9 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <div className="flex justify-between items-center mb-1">
-                  <label className="block text-xs font-semibold text-[#1C201D]">
-                    Password
-                  </label>
-                  <span className="text-[10px] text-[#7D8882]">
-                    Default: {activeTab === 'admin' ? 'admin123' : 'user123'}
-                  </span>
-                </div>
+                <label className="block text-xs font-semibold text-[#1C201D] mb-1">
+                  Password
+                </label>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-[#7D8882] absolute left-3 top-3" />
                   <input
@@ -357,15 +300,22 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-2 text-white ${
-                  activeTab === 'admin'
-                    ? 'bg-[#9C3B24] hover:bg-[#802F1C]'
-                    : 'bg-[#1A3B2B] hover:bg-[#2A5A43]'
-                }`}
+                className="w-full py-2.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-2 text-white bg-[#1A3B2B] hover:bg-[#2A5A43]"
               >
-                <span>{isLoading ? 'Verifying...' : activeTab === 'admin' ? 'Login to Admin Dashboard' : 'Sign In to Account'}</span>
+                <span>{isLoading ? 'Signing In...' : 'Sign In'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
+
+              <div className="pt-2 text-center text-xs text-[#5F6762]">
+                Don&apos;t have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => { setActiveTab('signup'); setErrorMessage(''); }}
+                  className="font-bold text-[#1A3B2B] hover:underline"
+                >
+                  Create one now
+                </button>
+              </div>
             </form>
           )}
 
@@ -375,7 +325,7 @@ export default function LoginPage() {
             </Link>
             <span className="flex items-center space-x-1">
               <ShieldCheck className="w-3.5 h-3.5 text-[#1A3B2B]" />
-              <span>Multi-Role Verified</span>
+              <span>Secure Session</span>
             </span>
           </div>
         </div>

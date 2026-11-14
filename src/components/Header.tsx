@@ -303,14 +303,6 @@ function HeaderContent() {
                               {wishlist.length}
                             </span>
                           </Link>
-
-                          <button
-                            onClick={() => openAuthModal('customer')}
-                            className="w-full flex items-center space-x-2 px-3 py-2 text-xs font-semibold text-[#5F6762] hover:bg-[#FAF8F5] rounded-xl text-left"
-                          >
-                            <Sparkles className="w-4 h-4 text-[#C29B38]" />
-                            <span>Switch Account / Demo</span>
-                          </button>
                         </div>
 
                         <div className="pt-1 border-t border-[#E8E2D8]">

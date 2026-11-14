@@ -147,24 +147,6 @@ export default function AdminPage() {
             <p className="text-xs text-[#5F6762] mt-1">Authorized Boutique Staff Only</p>
           </div>
 
-          {/* Credentials Info Pill */}
-          <div className="bg-[#FBF7EE] p-3 rounded-2xl border border-[#E8DFC9] text-left text-xs">
-            <p className="font-bold text-[#1A3B2B] flex items-center space-x-1.5 mb-1">
-              <Sparkles className="w-3.5 h-3.5 text-[#C29B38]" />
-              <span>Admin Credentials:</span>
-            </p>
-            <p className="text-[11px] text-[#5F6762]">
-              Username: <strong className="text-[#1C201D]">admin</strong> | Password: <strong className="text-[#1C201D]">admin123</strong>
-            </p>
-            <button
-              type="button"
-              onClick={() => login('admin', 'admin123')}
-              className="mt-2 w-full bg-[#1A3B2B] text-white py-1.5 rounded-lg text-xs font-bold hover:bg-[#2A5A43] transition-colors"
-            >
-              1-Click Instant Admin Login
-            </button>
-          </div>
-
           {authError && (
             <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl">
               {authError}

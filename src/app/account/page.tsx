@@ -28,7 +28,7 @@ import { BRAND_CONFIG } from '@/config/brand';
 
 export default function AccountPage() {
   const router = useRouter();
-  const { user, isAuthenticated, isAdmin, logout, updateProfile, openAuthModal, demoAccounts, login } = useAuth();
+  const { user, isAuthenticated, isAdmin, logout, updateProfile, openAuthModal } = useAuth();
   const { wishlist } = useCart();
 
   const [activeTab, setActiveTab] = useState<'orders' | 'address' | 'profile'>('orders');
@@ -54,43 +54,19 @@ export default function AccountPage() {
 
   const [saveMessage, setSaveMessage] = useState('');
 
-  // Load orders for current customer
+  // Load orders strictly for the currently logged in customer
   useEffect(() => {
     try {
-      const stored = JSON.parse(localStorage.getItem('vl_orders') || '[]');
-      if (stored.length > 0) {
-        setOrders(stored);
-      } else {
-        // Sample order for demo user
-        setOrders([
-          {
-            id: 'VL-782194',
-            orderNumber: 'VL-782194',
-            createdAt: '14 Nov 2026',
-            total: 1695,
-            paymentMethod: 'cod',
-            paymentStatus: 'pending',
-            orderStatus: 'Confirmed',
-            items: [
-              {
-                product: {
-                  title: 'Pure Kalyani Cotton Unstitched Suit Set',
-                  fabric: '100% Pure Kalyani Cotton',
-                  images: ['https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=600'],
-                  price: 1299
-                },
-                variant: { size: 'Unstitched 3-Piece Material', color: 'Royal Indigo Blue' },
-                quantity: 1
-              }
-            ],
-            shippingAddress: {
-              fullName: user?.name || 'Customer',
-              city: user?.address?.city || 'Chennai',
-              state: user?.address?.state || 'Tamil Nadu',
-              pincode: user?.address?.pincode || '600040'
-            }
-          }
-        ]);
+      const allOrders = JSON.parse(localStorage.getItem('vl_orders') || '[]');
+      if (user) {
+        // Filter orders belonging to this user (by email, phone, or name)
+        const userOrders = allOrders.filter(
+          (o: any) =>
+            o.shippingAddress?.email?.toLowerCase() === user.email?.toLowerCase() ||
+            o.shippingAddress?.phone === user.phone ||
+            o.customerName?.toLowerCase() === user.name?.toLowerCase()
+        );
+        setOrders(userOrders);
       }
     } catch {
       // Ignore
@@ -114,6 +90,7 @@ export default function AccountPage() {
     }
   }, [user]);
 
+  // If not logged in, show real-world sign-in gate
   if (!isAuthenticated || !user) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center bg-[#FAF8F5] px-4 py-16">
@@ -123,8 +100,8 @@ export default function AccountPage() {
           </div>
           <div>
             <h2 className="font-serif text-2xl font-bold text-[#1A3B2B]">Sign In to Your Account</h2>
-            <p className="text-xs text-[#5F6762] mt-1.5">
-              Access your order history, saved delivery addresses, and personal boutique wishlist.
+            <p className="text-xs text-[#5F6762] mt-1.5 leading-relaxed">
+              Sign in with your registered account to view your past orders, delivery tracking, and saved address.
             </p>
           </div>
 
@@ -133,36 +110,14 @@ export default function AccountPage() {
               onClick={() => openAuthModal('customer')}
               className="w-full bg-[#1A3B2B] text-white py-3 rounded-xl text-xs font-bold hover:bg-[#2A5A43] transition-all shadow-md"
             >
-              Customer Sign In
+              Sign In to Continue
             </button>
             <button
-              onClick={() => openAuthModal('admin')}
+              onClick={() => openAuthModal('signup')}
               className="w-full bg-white border border-[#D8D2C5] text-[#1C201D] py-2.5 rounded-xl text-xs font-semibold hover:border-[#1A3B2B] transition-colors"
             >
-              Store Administrator Sign In
+              New Customer? Create Account
             </button>
-          </div>
-
-          {/* Quick Demo Credentials */}
-          <div className="pt-4 border-t border-[#E8E2D8] text-left">
-            <p className="text-[11px] font-bold text-[#1A3B2B] mb-2 flex items-center space-x-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-[#C29B38]" />
-              <span>Available Demo Credentials:</span>
-            </p>
-            <div className="space-y-1.5 text-[11px]">
-              <div className="flex justify-between p-2 rounded-lg bg-[#FAF8F5] border border-[#E8E2D8]">
-                <span><strong>User 1:</strong> kavya / user123</span>
-                <button onClick={() => login('kavya', 'user123')} className="text-[#1A3B2B] font-bold hover:underline">Instant Login</button>
-              </div>
-              <div className="flex justify-between p-2 rounded-lg bg-[#FAF8F5] border border-[#E8E2D8]">
-                <span><strong>User 2:</strong> priya / user123</span>
-                <button onClick={() => login('priya', 'user123')} className="text-[#1A3B2B] font-bold hover:underline">Instant Login</button>
-              </div>
-              <div className="flex justify-between p-2 rounded-lg bg-rose-50 border border-rose-200">
-                <span><strong>Admin:</strong> admin / admin123</span>
-                <button onClick={() => login('admin', 'admin123')} className="text-rose-700 font-bold hover:underline">Instant Login</button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -301,35 +256,6 @@ export default function AccountPage() {
                 </span>
               </Link>
             </div>
-
-            {/* Quick Multi-User Account Switcher Card */}
-            <div className="bg-[#FBF7EE] rounded-2xl border border-[#E8DFC9] p-4 shadow-xs">
-              <p className="text-xs font-bold text-[#1A3B2B] mb-2 flex items-center space-x-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-[#C29B38]" />
-                <span>Switch User Account:</span>
-              </p>
-              <div className="space-y-2">
-                {demoAccounts.map((acc) => (
-                  <button
-                    key={acc.username}
-                    onClick={() => login(acc.username, acc.pass)}
-                    className={`w-full text-left p-2.5 rounded-xl text-xs border transition-all flex items-center justify-between ${
-                      user.username === acc.username
-                        ? 'bg-[#1A3B2B] text-white border-[#1A3B2B] font-bold'
-                        : 'bg-white border-[#E8E2D8] text-[#1C201D] hover:border-[#C29B38]'
-                    }`}
-                  >
-                    <div>
-                      <span className="block font-semibold">{acc.label}</span>
-                      <span className="text-[10px] opacity-75">{acc.username}</span>
-                    </div>
-                    {user.username === acc.username && (
-                      <CheckCircle2 className="w-4 h-4 text-[#E7C875]" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
 
           {/* Right Main Content Area */}
@@ -338,10 +264,10 @@ export default function AccountPage() {
               <div className="space-y-6">
                 <div className="bg-white rounded-3xl p-6 border border-[#E8E2D8] shadow-sm">
                   <h2 className="font-serif text-xl font-bold text-[#1A3B2B] mb-1">
-                    Order History &amp; Tracking
+                    Your Orders
                   </h2>
                   <p className="text-xs text-[#5F6762] mb-6">
-                    Track parcel dispatch, review invoice totals, and initiate delivery coordination.
+                    Track your current orders and view past purchase receipts.
                   </p>
 
                   {orders.length === 0 ? (
@@ -573,7 +499,7 @@ export default function AccountPage() {
                       Personal Profile Details
                     </h2>
                     <p className="text-xs text-[#5F6762] mt-0.5">
-                      Your identity and account credentials.
+                      Your identity and contact information.
                     </p>
                   </div>
 
@@ -648,7 +574,7 @@ export default function AccountPage() {
                         <span className="font-bold text-[#1C201D] text-sm">{user.name}</span>
                       </div>
                       <div>
-                        <span className="text-[#7D8882] block text-[11px]">Account Username</span>
+                        <span className="text-[#7D8882] block text-[11px]">Username</span>
                         <span className="font-mono font-bold text-[#1A3B2B]">@{user.username}</span>
                       </div>
                       <div>
