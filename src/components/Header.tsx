@@ -37,19 +37,19 @@ export default function Header() {
 
   return (
     <>
-      {/* Top Announcement Bar */}
-      <aside aria-label="Store Announcements" className="bg-[#1A3B2B] text-[#FAF8F5] text-xs py-2.5 px-4 border-b border-[#2A5A43]">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-[#C29B38] animate-pulse"></span>
-            <p className="font-medium tracking-wide">
-              Handpicked Loom Fabrics Designed into <span className="text-[#E7C875] font-semibold">Women&apos;s Signature Outfits</span>
+      {/* Top Announcement Bar - Strict 1 Row */}
+      <aside aria-label="Store Announcements" className="bg-[#1A3B2B] text-[#FAF8F5] text-xs py-2 px-4 border-b border-[#2A5A43] overflow-hidden">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 whitespace-nowrap">
+          <div className="flex items-center space-x-2 shrink-0">
+            <span className="w-2 h-2 rounded-full bg-[#C29B38] animate-pulse"></span>
+            <p className="font-medium tracking-wide text-[11px] sm:text-xs">
+              Handpicked Loom Fabrics Styled into <span className="text-[#E7C875] font-semibold">Women&apos;s Signature Outfits</span>
             </p>
           </div>
-          <div className="hidden md:flex items-center space-x-6 text-[11px] text-[#D8D2C5]">
+          <div className="hidden lg:flex items-center space-x-6 text-[11px] text-[#D8D2C5] shrink-0">
             <span className="flex items-center space-x-1.5">
               <Truck className="w-3.5 h-3.5 text-[#C29B38]" />
-              <span>Free Express Delivery &gt; ₹{BRAND_CONFIG.freeShippingThreshold}</span>
+              <span>Free Delivery &gt; ₹{BRAND_CONFIG.freeShippingThreshold}</span>
             </span>
             <span className="flex items-center space-x-1.5">
               <Zap className="w-3.5 h-3.5 text-[#E7C875]" />
@@ -57,18 +57,19 @@ export default function Header() {
             </span>
             <Link href="/admin" className="text-[#C29B38] hover:underline font-semibold flex items-center space-x-1">
               <Settings className="w-3 h-3" />
-              <span>Store Admin</span>
+              <span>Admin</span>
             </Link>
           </div>
         </div>
       </aside>
 
-      {/* Main Header */}
+      {/* Main Header - STRICT ONE ROW (No wrapping) */}
       <header className="sticky top-0 z-40 glass-header border-b border-[#E8E2D8] transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            {/* Mobile Menu Button */}
-            <div className="flex items-center md:hidden">
+          <div className="flex items-center justify-between h-20 gap-4">
+            
+            {/* Mobile Menu Toggle Button */}
+            <div className="flex items-center lg:hidden shrink-0">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="p-2 text-[#1C201D] hover:text-[#1A3B2B] rounded-lg transition-colors"
@@ -78,49 +79,60 @@ export default function Header() {
               </button>
             </div>
 
-            {/* Brand Logo */}
-            <div className="flex items-center">
-              <Link href="/" className="flex flex-col items-center sm:items-start group">
-                <span className="font-serif text-2xl sm:text-3xl tracking-widest font-bold text-[#1A3B2B] group-hover:text-[#2A5A43] transition-colors">
-                  {BRAND_CONFIG.shortName}
-                </span>
-                <span className="text-[10px] sm:text-[11px] tracking-[0.26em] uppercase text-[#C29B38] font-semibold -mt-1">
-                  for you • Women&apos;s Fashion
-                </span>
+            {/* Brand Logo - Fixed Width & No Wrap */}
+            <div className="flex items-center shrink-0">
+              <Link href="/" className="flex items-center space-x-3 group">
+                <div className="w-10 h-10 rounded-xl bg-[#1A3B2B] text-[#E7C875] flex items-center justify-center font-serif text-xl font-black shadow-md border border-[#2A5A43] group-hover:scale-105 transition-transform">
+                  VL
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-serif text-xl sm:text-2xl font-black tracking-wider text-[#1A3B2B] group-hover:text-[#2A5A43] transition-colors leading-tight whitespace-nowrap">
+                    VL DESIGNS
+                  </span>
+                  <span className="text-[9px] sm:text-[10px] tracking-[0.22em] uppercase text-[#C29B38] font-bold -mt-0.5 whitespace-nowrap">
+                    for you • Women&apos;s Fashion
+                  </span>
+                </div>
               </Link>
             </div>
 
-            {/* Desktop Navigation Links */}
-            <nav className="hidden md:flex items-center space-x-7 text-sm font-medium text-[#1C201D]">
+            {/* Desktop Navigation Links - Single Row with whitespace-nowrap */}
+            <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8 text-[13px] xl:text-sm font-semibold text-[#1C201D] whitespace-nowrap">
               <Link href="/" className="hover:text-[#1A3B2B] transition-colors">
                 Home
               </Link>
+              
               <Link href="/shop" className="hover:text-[#1A3B2B] transition-colors">
                 All Collections
               </Link>
+
               <Link 
                 href="/shop?type=own_design" 
-                className="flex items-center space-x-1.5 text-[#1A3B2B] font-semibold hover:text-[#C29B38] transition-colors bg-[#FBF7EE] px-3.5 py-1.5 rounded-full border border-[#E8DFC9] shadow-xs"
+                className="flex items-center space-x-1.5 text-[#1A3B2B] hover:text-[#C29B38] transition-colors bg-[#FBF7EE] px-3.5 py-1.5 rounded-full border border-[#E8DFC9] shadow-xs"
               >
                 <Sparkles className="w-3.5 h-3.5 text-[#C29B38]" />
-                <span>Our Designed Outfits</span>
+                <span>Our Designs</span>
               </Link>
-              <Link href="/shop?type=resold" className="hover:text-[#1A3B2B] transition-colors text-[#5F6762]">
-                Curated Trends
-              </Link>
+
               <Link href="/shop?category=Kurtis+%26+Sets" className="hover:text-[#1A3B2B] transition-colors">
                 Dresses &amp; Co-Ords
               </Link>
+
               <Link href="/shop?category=Unstitched+Suit+Material" className="hover:text-[#1A3B2B] transition-colors">
                 Suit Materials
               </Link>
+
               <Link href="/shop?category=Cotton+Sarees" className="hover:text-[#1A3B2B] transition-colors">
                 Cotton Sarees
               </Link>
+
+              <Link href="/shop?type=resold" className="hover:text-[#1A3B2B] transition-colors text-[#5F6762]">
+                Curated Trends
+              </Link>
             </nav>
 
-            {/* Header Action Icons */}
-            <div className="flex items-center space-x-2 sm:space-x-3">
+            {/* Header Action Icons - No Wrap, Shrink-0 */}
+            <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
               {/* Search Toggle */}
               <button
                 onClick={() => setSearchOpen(true)}
@@ -147,7 +159,7 @@ export default function Header() {
               {/* Cart Drawer Trigger */}
               <button
                 onClick={openCart}
-                className="relative flex items-center space-x-2 bg-[#1A3B2B] text-white px-3.5 py-2 rounded-full hover:bg-[#2A5A43] transition-all shadow-md group"
+                className="relative flex items-center space-x-2 bg-[#1A3B2B] text-white px-3.5 py-2 rounded-full hover:bg-[#2A5A43] transition-all shadow-md group whitespace-nowrap shrink-0"
                 aria-label="Open shopping cart"
               >
                 <ShoppingBag className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
@@ -162,7 +174,7 @@ export default function Header() {
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-[#FAF8F5] border-b border-[#E8E2D8] px-4 pt-3 pb-6 space-y-3 animate-in slide-in-from-top-2 duration-200">
+          <div className="lg:hidden bg-[#FAF8F5] border-b border-[#E8E2D8] px-4 pt-3 pb-6 space-y-3 animate-in slide-in-from-top-2 duration-200">
             <Link
               href="/"
               onClick={() => setMobileMenuOpen(false)}
@@ -180,7 +192,7 @@ export default function Header() {
             <Link
               href="/shop?type=own_design"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-between py-2 text-base font-semibold text-[#1A3B2B] bg-[#FBF7EE] px-3 rounded-lg border border-[#E8DFC9]"
+              className="flex items-center justify-between py-2.5 text-base font-semibold text-[#1A3B2B] bg-[#FBF7EE] px-3.5 rounded-xl border border-[#E8DFC9]"
             >
               <span className="flex items-center space-x-2">
                 <Sparkles className="w-4 h-4 text-[#C29B38]" />
@@ -258,7 +270,7 @@ export default function Header() {
                 <div className="py-6 text-center text-xs text-[#5F6762]">
                   <p className="font-semibold text-[#1C201D] mb-2">Popular Searches:</p>
                   <div className="flex flex-wrap justify-center gap-2">
-                    {['Tiered Maxi Dress', 'Cotton Co-Ord Set', 'Kalyani Suit', 'Cham Cham Saree', 'In-House Designs'].map((term) => (
+                    {['Tiered Maxi Dress', 'Cotton Co-Ord Set', 'Kalyani Suit', 'Cham Cham Saree', 'Our Designs'].map((term) => (
                       <button
                         key={term}
                         onClick={() => setSearchQuery(term)}
