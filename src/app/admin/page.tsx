@@ -132,7 +132,17 @@ export default function AdminPage() {
   const updateOrderStatus = (orderId: string, newStatus: string) => {
     const updated = orders.map((o) => (o.id === orderId ? { ...o, orderStatus: newStatus } : o));
     setOrders(updated);
-    localStorage.setItem('vl_orders', JSON.stringify(updated));
+    try {
+      localStorage.setItem('vl_orders', JSON.stringify(updated));
+      const single = localStorage.getItem(`vl_order_${orderId}`);
+      if (single) {
+        const parsed = JSON.parse(single);
+        parsed.orderStatus = newStatus;
+        localStorage.setItem(`vl_order_${orderId}`, JSON.stringify(parsed));
+      }
+    } catch {
+      // Ignore
+    }
   };
 
   if (!isAdmin) {
@@ -289,7 +299,7 @@ export default function AdminPage() {
                       <div>
                         <div className="flex items-center space-x-2">
                           <span className="font-mono font-bold text-[#1A3B2B]">{o.id}</span>
-                          <span className="text-[#7A8580]">• {o.createdAt}</span>
+                          <span className="text-[#7A8580]">• {o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-IN') : 'Recent'}</span>
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                             o.paymentMethod === 'upi_razorpay'
                               ? 'bg-emerald-100 text-emerald-800'
@@ -297,10 +307,15 @@ export default function AdminPage() {
                           }`}>
                             {o.paymentMethod === 'upi_razorpay' ? 'Prepaid (UPI)' : 'COD (Payment Pending)'}
                           </span>
+                          {o.userUsername && (
+                            <span className="bg-[#FAF8F5] border border-[#D8D2C5] text-[#1A3B2B] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                              Account: @{o.userUsername}
+                            </span>
+                          )}
                         </div>
 
                         <p className="font-semibold text-[#1C201D] mt-1.5">
-                          {o.customerName || 'Customer'} • Ph: +91 {o.customerPhone || '9876543210'}
+                          {o.customerName || 'Customer'} {o.customerEmail ? `(${o.customerEmail})` : ''} • Ph: +91 {o.customerPhone || '9876543210'}
                         </p>
                         <p className="text-[#5F6762] text-[11px]">
                           Destination: {o.shippingAddress?.city}, {o.shippingAddress?.state} - {o.shippingAddress?.pincode}
@@ -323,9 +338,10 @@ export default function AdminPage() {
                           className="bg-[#FAF8F5] border border-[#D8D2C5] rounded-xl px-3 py-2 text-xs font-semibold text-[#1C201D] outline-none"
                         >
                           <option value="Confirmed">Confirmed</option>
-                          <option value="Packed & Quality Checked">Packed</option>
+                          <option value="Packed & Quality Checked">Packed &amp; QC</option>
                           <option value="Dispatched">Dispatched</option>
                           <option value="Delivered">Delivered</option>
+                          <option value="Cancelled">Cancelled</option>
                         </select>
                       </div>
                     </div>

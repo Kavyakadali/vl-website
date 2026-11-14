@@ -193,19 +193,27 @@ export default function OrderSuccessPage() {
             {/* Action Buttons */}
             <div className="pt-4 flex flex-col sm:flex-row gap-3">
               <Link
-                href="/shop"
+                href="/account"
                 className="flex-1 bg-[#1A3B2B] hover:bg-[#2A5A43] text-white font-bold py-3.5 px-6 rounded-xl text-xs uppercase tracking-wider text-center flex items-center justify-center space-x-2 transition-all shadow-md"
               >
+                <Package className="w-4 h-4 text-[#E7C875]" />
+                <span>View in My Account (Track Order)</span>
+              </Link>
+
+              <Link
+                href="/shop"
+                className="bg-white border border-[#D8D2C5] text-[#1C201D] hover:bg-[#FAF8F5] font-semibold py-3.5 px-6 rounded-xl text-xs uppercase tracking-wider text-center flex items-center justify-center space-x-2 transition-all"
+              >
                 <span>Continue Shopping</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 text-[#5F6762]" />
               </Link>
 
               <button
                 onClick={() => window.print()}
-                className="bg-white border border-[#D8D2C5] text-[#1C201D] hover:bg-[#FAF8F5] font-semibold py-3.5 px-6 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center space-x-2 transition-all"
+                className="bg-white border border-[#D8D2C5] text-[#5F6762] hover:text-[#1C201D] hover:bg-[#FAF8F5] font-semibold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center space-x-1.5 transition-all"
               >
-                <Printer className="w-4 h-4 text-[#5F6762]" />
-                <span>Print Invoice</span>
+                <Printer className="w-4 h-4" />
+                <span className="hidden sm:inline">Print</span>
               </button>
             </div>
           </div>

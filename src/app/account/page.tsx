@@ -59,12 +59,14 @@ export default function AccountPage() {
     try {
       const allOrders = JSON.parse(localStorage.getItem('vl_orders') || '[]');
       if (user) {
-        // Filter orders belonging to this user (by email, phone, or name)
+        // Filter orders belonging to this user (by userId, username, email, phone, or recipient name)
         const userOrders = allOrders.filter(
           (o: any) =>
-            o.shippingAddress?.email?.toLowerCase() === user.email?.toLowerCase() ||
-            o.shippingAddress?.phone === user.phone ||
-            o.customerName?.toLowerCase() === user.name?.toLowerCase()
+            o.userId === user.id ||
+            (user.username && o.userUsername?.toLowerCase() === user.username.toLowerCase()) ||
+            (user.email && (o.customerEmail?.toLowerCase() === user.email.toLowerCase() || o.shippingAddress?.email?.toLowerCase() === user.email.toLowerCase())) ||
+            (user.phone && (o.customerPhone === user.phone || o.shippingAddress?.phone === user.phone)) ||
+            (user.name && o.customerName?.toLowerCase() === user.name.toLowerCase())
         );
         setOrders(userOrders);
       }
@@ -138,6 +140,28 @@ export default function AccountPage() {
     setIsEditingProfile(false);
     setSaveMessage('Profile information updated successfully!');
     setTimeout(() => setSaveMessage(''), 3000);
+  };
+
+  const handleCancelOrder = (orderId: string) => {
+    if (!confirm('Are you sure you want to cancel this order?')) return;
+    try {
+      const allOrders = JSON.parse(localStorage.getItem('vl_orders') || '[]');
+      const updated = allOrders.map((o: any) =>
+        o.id === orderId ? { ...o, orderStatus: 'Cancelled' } : o
+      );
+      localStorage.setItem('vl_orders', JSON.stringify(updated));
+
+      const single = localStorage.getItem(`vl_order_${orderId}`);
+      if (single) {
+        const parsed = JSON.parse(single);
+        parsed.orderStatus = 'Cancelled';
+        localStorage.setItem(`vl_order_${orderId}`, JSON.stringify(parsed));
+      }
+
+      setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, orderStatus: 'Cancelled' } : o)));
+    } catch {
+      // Ignore
+    }
   };
 
   return (
@@ -293,19 +317,29 @@ export default function AccountPage() {
                             <div>
                               <div className="flex items-center space-x-2">
                                 <span className="font-mono text-xs font-bold text-[#1A3B2B]">{ord.orderNumber}</span>
-                                <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full border border-emerald-200">
+                                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                                  ord.orderStatus === 'Cancelled'
+                                    ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                    : ord.orderStatus === 'Delivered'
+                                    ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                                    : ord.orderStatus === 'Dispatched'
+                                    ? 'bg-blue-50 text-blue-800 border-blue-200'
+                                    : ord.orderStatus === 'Packed & Quality Checked'
+                                    ? 'bg-amber-50 text-amber-900 border-amber-200'
+                                    : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                }`}>
                                   {ord.orderStatus || 'Confirmed'}
                                 </span>
                               </div>
                               <p className="text-[11px] text-[#5F6762] mt-0.5">
-                                Placed on {ord.createdAt || 'Recent'} • {ord.paymentMethod === 'cod' ? 'Cash on Delivery (+₹45)' : 'Online Payment'}
+                                Placed on {new Date(ord.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) || 'Recent'} • {ord.paymentMethod === 'cod' ? 'Cash on Delivery (+₹45)' : 'Online Payment'}
                               </p>
                             </div>
 
                             <div className="text-left sm:text-right">
                               <span className="text-base font-bold text-[#1A3B2B]">₹{ord.total}</span>
                               <span className="block text-[11px] text-[#5F6762]">
-                                {ord.paymentStatus === 'paid' ? 'Payment Completed' : 'Payment Due at Doorstep'}
+                                {ord.orderStatus === 'Cancelled' ? 'Order Cancelled' : ord.paymentStatus === 'paid' ? 'Payment Completed' : 'Payment Due at Doorstep'}
                               </span>
                             </div>
                           </div>
@@ -338,15 +372,27 @@ export default function AccountPage() {
                               Ship to: <strong className="text-[#1C201D]">{ord.shippingAddress?.city}, {ord.shippingAddress?.state} ({ord.shippingAddress?.pincode})</strong>
                             </div>
 
-                            <a
-                              href={`https://wa.me/${BRAND_CONFIG.whatsappNumber}?text=${encodeURIComponent(`Hi VL Designs, I want to track my order #${ord.orderNumber}.`)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center space-x-1.5 text-[#1E6B35] bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 font-semibold hover:bg-emerald-100 transition-colors"
-                            >
-                              <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />
-                              <span>Track via WhatsApp</span>
-                            </a>
+                            <div className="flex items-center space-x-2">
+                              {ord.orderStatus === 'Confirmed' && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleCancelOrder(ord.id)}
+                                  className="text-[11px] text-rose-700 hover:text-rose-900 border border-rose-200 bg-rose-50 px-3 py-1.5 rounded-lg font-semibold transition-colors"
+                                >
+                                  Cancel Order
+                                </button>
+                              )}
+
+                              <a
+                                href={`https://wa.me/${BRAND_CONFIG.whatsappNumber}?text=${encodeURIComponent(`Hi VL Designs, I want to track my order #${ord.orderNumber}.`)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center space-x-1.5 text-[#1E6B35] bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 font-semibold hover:bg-emerald-100 transition-colors"
+                              >
+                                <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />
+                                <span>Track via WhatsApp</span>
+                              </a>
+                            </div>
                           </div>
                         </div>
                       ))}

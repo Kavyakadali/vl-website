@@ -32,7 +32,7 @@ export default function CheckoutPage() {
     discountAmount,
     clearCart,
   } = useCart();
-  const { user, isAuthenticated, openAuthModal } = useAuth();
+  const { user, isAuthenticated, login, signup, logout, updateProfile, openAuthModal } = useAuth();
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -43,6 +43,22 @@ export default function CheckoutPage() {
     city: '',
     state: 'Tamil Nadu',
     pincode: '',
+  });
+
+  // Inline checkout authentication state
+  const [authTab, setAuthTab] = useState<'signin' | 'signup'>('signin');
+  const [authUsername, setAuthUsername] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+
+  // Quick signup form state
+  const [signupForm, setSignupForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    username: '',
+    password: '',
   });
 
   // Pre-fill user data when logged in
@@ -59,6 +75,7 @@ export default function CheckoutPage() {
         state: user.address?.state || prev.state,
         pincode: user.address?.pincode || prev.pincode,
       }));
+      setAuthError('');
     }
   }, [user]);
 
@@ -94,6 +111,38 @@ export default function CheckoutPage() {
     }
   };
 
+  const handleCheckoutLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    setAuthLoading(true);
+
+    const res = login(authUsername, authPassword);
+    setAuthLoading(false);
+
+    if (!res.success) {
+      setAuthError(res.error || 'Invalid credentials. Please verify your username and password.');
+    }
+  };
+
+  const handleCheckoutSignup = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    setAuthLoading(true);
+
+    const res = signup({
+      name: signupForm.name,
+      phone: signupForm.phone,
+      email: signupForm.email,
+      username: signupForm.username,
+      password: signupForm.password,
+    });
+    setAuthLoading(false);
+
+    if (!res.success) {
+      setAuthError(res.error || 'Failed to create account. Please check your inputs.');
+    }
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.fullName.trim()) newErrors.fullName = 'Full Name is required';
@@ -108,26 +157,61 @@ export default function CheckoutPage() {
 
   const handleSubmitOrder = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Mandatory Real-Time Auth check: No order without an authenticated customer
+    if (!isAuthenticated || !user) {
+      setAuthError('Please sign in or create an account in Step 1 to place and track your order in real time.');
+      const el = document.getElementById('step-1-auth');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+      return;
+    }
+
     if (!validateForm()) return;
 
-    // Real COD Order Placement - 100% Genuine, No Fake Status
+    // Real COD Order Placement - 100% Genuine, Linked to Authenticated Customer
     const orderId = `VL-${Math.floor(100000 + Math.random() * 900000)}`;
     
     const newOrder = {
       id: orderId,
       orderNumber: orderId,
+      userId: user.id,
+      userUsername: user.username,
+      customerName: formData.fullName || user.name,
+      customerPhone: formData.phone || user.phone,
+      customerEmail: formData.email || user.email,
+      shippingAddress: {
+        ...formData,
+        fullName: formData.fullName || user.name,
+        phone: formData.phone || user.phone,
+        email: formData.email || user.email,
+      },
       items: cart,
-      shippingAddress: formData,
       subtotal,
       discount: discountAmount,
       shippingFee,
       codFee,
       total: finalPayable,
       paymentMethod: 'cod',
-      paymentStatus: 'pending', // Transparent real status: Payment pending on delivery
+      paymentStatus: 'pending', // Payment pending on doorstep delivery
       orderStatus: 'Confirmed',
       createdAt: new Date().toISOString(),
     };
+
+    // Update user profile address so next time it is remembered
+    updateProfile({
+      name: formData.fullName || user.name,
+      phone: formData.phone || user.phone,
+      email: formData.email || user.email,
+      address: {
+        addressLine1: formData.addressLine1,
+        addressLine2: formData.addressLine2,
+        city: formData.city,
+        state: formData.state,
+        pincode: formData.pincode,
+      },
+    });
 
     try {
       const existingOrders = JSON.parse(localStorage.getItem('vl_orders') || '[]');
@@ -190,45 +274,241 @@ export default function CheckoutPage() {
           {/* Left Column: Delivery & Payment Details */}
           <div className="lg:col-span-7 space-y-6">
 
-            {/* Logged in / Guest Banner */}
-            <div className="bg-[#FBF7EE] p-4 rounded-2xl border border-[#E8DFC9] flex items-center justify-between text-xs">
+            {/* Step 1: Account Authentication (Mandatory to Place Order) */}
+            <div id="step-1-auth" className="bg-white p-6 rounded-2xl border border-[#E8E2D8] shadow-xs space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-[#E8E2D8]">
+                <h3 className="text-xs font-bold text-[#1C201D] uppercase tracking-wider flex items-center space-x-2">
+                  <span className={`w-5 h-5 rounded-full text-white text-[11px] flex items-center justify-center font-bold ${isAuthenticated ? 'bg-[#1E6B35]' : 'bg-[#1A3B2B]'}`}>
+                    {isAuthenticated ? '✓' : '1'}
+                  </span>
+                  <span>Step 1: Customer Account &amp; Identity</span>
+                </h3>
+                {isAuthenticated && user && (
+                  <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full border border-emerald-200">
+                    Verified Account
+                  </span>
+                )}
+              </div>
+
+              {/* If Authenticated: Display verified customer details */}
               {isAuthenticated && user ? (
-                <div className="flex items-center space-x-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-[#1A3B2B] text-[#E7C875] flex items-center justify-center font-bold text-xs shadow-xs">
-                    {user.name.charAt(0).toUpperCase()}
+                <div className="bg-[#FAF8F5] p-4 rounded-xl border border-[#E8E2D8] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#1A3B2B] text-[#E7C875] flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-[#1C201D]">
+                        {user.name} <span className="font-normal text-[#5F6762]">(@{user.username})</span>
+                      </p>
+                      <p className="text-[11px] text-[#5F6762]">
+                        {user.email} • Ph: +91 {user.phone || '9876543210'}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <span className="font-bold text-[#1C201D] block">Ordering as {user.name} ({user.email})</span>
-                    <span className="text-[11px] text-[#5F6762]">Delivery address auto-filled from your profile</span>
+
+                  <div className="flex items-center space-x-2">
+                    <button
+                      type="button"
+                      onClick={logout}
+                      className="text-[11px] text-[#9C3B24] hover:underline font-semibold"
+                    >
+                      Sign Out / Switch Account
+                    </button>
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-2">
-                  <div className="flex items-center space-x-2">
-                    <Sparkles className="w-4 h-4 text-[#C29B38] shrink-0" />
-                    <span className="text-[#1C201D]">Already have a VL Designs account?</span>
+                /* If Not Logged In: Real-time Inline Sign In / Register Flow */
+                <div className="space-y-4">
+                  <div className="bg-[#FBF7EE] p-3.5 rounded-xl border border-[#E8DFC9] text-xs text-[#7A6B42] flex items-start space-x-2">
+                    <Lock className="w-4 h-4 text-[#C29B38] shrink-0 mt-0.5" />
+                    <p className="text-[11px] leading-relaxed">
+                      <strong>Login Required:</strong> To link this order directly to your account and track parcel dispatch in real time, please sign in or create an account.
+                    </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => openAuthModal('customer')}
-                    className="font-bold text-[#1A3B2B] bg-white border border-[#E8DFC9] px-3 py-1.5 rounded-lg hover:border-[#1A3B2B] text-xs transition-colors self-start sm:self-auto"
-                  >
-                    Sign In for 1-Click Fill
-                  </button>
+
+                  {authError && (
+                    <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl flex items-center space-x-2 animate-in fade-in">
+                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                      <span>{authError}</span>
+                    </div>
+                  )}
+
+                  {/* Auth Tabs */}
+                  <div className="grid grid-cols-2 bg-[#FAF8F5] p-1 rounded-xl border border-[#E8E2D8] text-xs font-semibold">
+                    <button
+                      type="button"
+                      onClick={() => { setAuthTab('signin'); setAuthError(''); }}
+                      className={`py-2 rounded-lg transition-all ${
+                        authTab === 'signin'
+                          ? 'bg-white text-[#1A3B2B] shadow-xs font-bold'
+                          : 'text-[#5F6762] hover:text-[#1C201D]'
+                      }`}
+                    >
+                      Sign In to Account
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setAuthTab('signup'); setAuthError(''); }}
+                      className={`py-2 rounded-lg transition-all ${
+                        authTab === 'signup'
+                          ? 'bg-white text-[#1A3B2B] shadow-xs font-bold'
+                          : 'text-[#5F6762] hover:text-[#1C201D]'
+                      }`}
+                    >
+                      New Customer? Register
+                    </button>
+                  </div>
+
+                  {/* Sign In Form */}
+                  {authTab === 'signin' && (
+                    <div className="space-y-3 pt-1">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-semibold text-[#1C201D] mb-1">
+                            Username or Email *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. kavya or priya"
+                            value={authUsername}
+                            onChange={(e) => setAuthUsername(e.target.value)}
+                            className="w-full text-xs border border-[#D8D2C5] rounded-xl px-3.5 py-2.5 outline-none focus:border-[#1A3B2B]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-[#1C201D] mb-1">
+                            Password *
+                          </label>
+                          <input
+                            type="password"
+                            required
+                            placeholder="Enter password"
+                            value={authPassword}
+                            onChange={(e) => setAuthPassword(e.target.value)}
+                            className="w-full text-xs border border-[#D8D2C5] rounded-xl px-3.5 py-2.5 outline-none focus:border-[#1A3B2B]"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={handleCheckoutLogin}
+                          disabled={authLoading}
+                          className="w-full sm:w-auto bg-[#1A3B2B] hover:bg-[#2A5A43] text-white text-xs font-bold px-6 py-2.5 rounded-xl transition-all shadow-sm"
+                        >
+                          {authLoading ? 'Signing In...' : 'Sign In & Continue Checkout'}
+                        </button>
+                        <span className="text-[11px] text-[#7A8580]">
+                          Customer accounts: <strong>kavya</strong> / <strong>priya</strong>
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Quick Register Form */}
+                  {authTab === 'signup' && (
+                    <div className="space-y-3 pt-1">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-semibold text-[#1C201D] mb-1">
+                            Full Name *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Ananya Rao"
+                            value={signupForm.name}
+                            onChange={(e) => setSignupForm({ ...signupForm, name: e.target.value })}
+                            className="w-full text-xs border border-[#D8D2C5] rounded-xl px-3.5 py-2.5 outline-none focus:border-[#1A3B2B]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-[#1C201D] mb-1">
+                            WhatsApp / Mobile Number *
+                          </label>
+                          <input
+                            type="tel"
+                            maxLength={10}
+                            required
+                            placeholder="10-digit mobile"
+                            value={signupForm.phone}
+                            onChange={(e) => setSignupForm({ ...signupForm, phone: e.target.value.replace(/\D/g, '') })}
+                            className="w-full text-xs border border-[#D8D2C5] rounded-xl px-3.5 py-2.5 outline-none focus:border-[#1A3B2B]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-[#1C201D] mb-1">
+                            Email Address *
+                          </label>
+                          <input
+                            type="email"
+                            required
+                            placeholder="name@example.com"
+                            value={signupForm.email}
+                            onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
+                            className="w-full text-xs border border-[#D8D2C5] rounded-xl px-3.5 py-2.5 outline-none focus:border-[#1A3B2B]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-[#1C201D] mb-1">
+                            Pick a Username *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. ananya"
+                            value={signupForm.username}
+                            onChange={(e) => setSignupForm({ ...signupForm, username: e.target.value.toLowerCase().replace(/\s+/g, '') })}
+                            className="w-full text-xs border border-[#D8D2C5] rounded-xl px-3.5 py-2.5 outline-none focus:border-[#1A3B2B]"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-2">
+                          <label className="block text-xs font-semibold text-[#1C201D] mb-1">
+                            Create Password (min. 6 characters) *
+                          </label>
+                          <input
+                            type="password"
+                            required
+                            placeholder="At least 6 characters"
+                            value={signupForm.password}
+                            onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
+                            className="w-full text-xs border border-[#D8D2C5] rounded-xl px-3.5 py-2.5 outline-none focus:border-[#1A3B2B]"
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleCheckoutSignup}
+                        disabled={authLoading}
+                        className="w-full bg-[#1A3B2B] hover:bg-[#2A5A43] text-white text-xs font-bold py-3 rounded-xl transition-all shadow-sm"
+                      >
+                        {authLoading ? 'Creating Account...' : 'Create Account & Continue Checkout'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
             
-            {/* Step 1: Contact Details */}
+            {/* Step 2: Delivery Contact & Address */}
             <div className="bg-white p-6 rounded-2xl border border-[#E8E2D8] shadow-xs space-y-4">
               <h3 className="text-xs font-bold text-[#1C201D] uppercase tracking-wider flex items-center space-x-2">
-                <span className="w-5 h-5 rounded-full bg-[#1A3B2B] text-white text-[11px] flex items-center justify-center font-bold">1</span>
-                <span>Customer Contact Information</span>
+                <span className="w-5 h-5 rounded-full bg-[#1A3B2B] text-white text-[11px] flex items-center justify-center font-bold">2</span>
+                <span>Delivery Address &amp; Recipient</span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-[#1C201D] mb-1">Full Name *</label>
+                  <label className="block text-xs font-semibold text-[#1C201D] mb-1">Recipient Name *</label>
                   <input
                     type="text"
                     placeholder="Enter your name"
@@ -271,18 +551,8 @@ export default function CheckoutPage() {
                     className="w-full text-xs border border-[#D8D2C5] rounded-xl px-3.5 py-2.5 outline-none focus:border-[#1A3B2B]"
                   />
                 </div>
-              </div>
-            </div>
 
-            {/* Step 2: Shipping Address */}
-            <div className="bg-white p-6 rounded-2xl border border-[#E8E2D8] shadow-xs space-y-4">
-              <h3 className="text-xs font-bold text-[#1C201D] uppercase tracking-wider flex items-center space-x-2">
-                <span className="w-5 h-5 rounded-full bg-[#1A3B2B] text-white text-[11px] flex items-center justify-center font-bold">2</span>
-                <span>Delivery Address</span>
-              </h3>
-
-              <div className="space-y-4">
-                <div>
+                <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-[#1C201D] mb-1">
                     Flat / House No., Apartment, Street *
                   </label>
@@ -296,41 +566,52 @@ export default function CheckoutPage() {
                   {errors.addressLine1 && <p className="text-[11px] text-[#9C3B24] mt-1">{errors.addressLine1}</p>}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-[#1C201D] mb-1">6-Digit Pincode *</label>
-                    <input
-                      type="text"
-                      maxLength={6}
-                      placeholder="e.g. 560001"
-                      value={formData.pincode}
-                      onChange={handlePincodeChange}
-                      className="w-full text-xs border border-[#D8D2C5] rounded-xl px-3.5 py-2.5 outline-none focus:border-[#1A3B2B] font-bold"
-                    />
-                    {errors.pincode && <p className="text-[11px] text-[#9C3B24] mt-1">{errors.pincode}</p>}
-                  </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-[#1C201D] mb-1">
+                    Landmark / Colony (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Opposite City Park"
+                    value={formData.addressLine2}
+                    onChange={(e) => setFormData({ ...formData, addressLine2: e.target.value })}
+                    className="w-full text-xs border border-[#D8D2C5] rounded-xl px-3.5 py-2.5 outline-none focus:border-[#1A3B2B]"
+                  />
+                </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-[#1C201D] mb-1">City / Town *</label>
-                    <input
-                      type="text"
-                      placeholder="City"
-                      value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      className="w-full text-xs border border-[#D8D2C5] rounded-xl px-3.5 py-2.5 outline-none focus:border-[#1A3B2B]"
-                    />
-                    {errors.city && <p className="text-[11px] text-[#9C3B24] mt-1">{errors.city}</p>}
-                  </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#1C201D] mb-1">6-Digit Pincode *</label>
+                  <input
+                    type="text"
+                    maxLength={6}
+                    placeholder="e.g. 560001"
+                    value={formData.pincode}
+                    onChange={handlePincodeChange}
+                    className="w-full text-xs border border-[#D8D2C5] rounded-xl px-3.5 py-2.5 outline-none focus:border-[#1A3B2B] font-bold"
+                  />
+                  {errors.pincode && <p className="text-[11px] text-[#9C3B24] mt-1">{errors.pincode}</p>}
+                </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-[#1C201D] mb-1">State *</label>
-                    <input
-                      type="text"
-                      value={formData.state}
-                      onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                      className="w-full text-xs border border-[#D8D2C5] rounded-xl px-3.5 py-2.5 outline-none focus:border-[#1A3B2B]"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#1C201D] mb-1">City / Town *</label>
+                  <input
+                    type="text"
+                    placeholder="City"
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    className="w-full text-xs border border-[#D8D2C5] rounded-xl px-3.5 py-2.5 outline-none focus:border-[#1A3B2B]"
+                  />
+                  {errors.city && <p className="text-[11px] text-[#9C3B24] mt-1">{errors.city}</p>}
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-[#1C201D] mb-1">State *</label>
+                  <input
+                    type="text"
+                    value={formData.state}
+                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                    className="w-full text-xs border border-[#D8D2C5] rounded-xl px-3.5 py-2.5 outline-none focus:border-[#1A3B2B]"
+                  />
                 </div>
               </div>
             </div>
@@ -477,14 +758,29 @@ export default function CheckoutPage() {
                 </p>
               </div>
 
-              {/* Final Submit Button */}
-              <button
-                type="submit"
-                className="w-full bg-[#1A3B2B] hover:bg-[#2A5A43] text-white font-bold py-4 px-4 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center space-x-2 transition-all shadow-xl hover:-translate-y-0.5"
-              >
-                <Truck className="w-4 h-4 text-[#C29B38]" />
-                <span>Confirm Cash on Delivery Order (₹{finalPayable})</span>
-              </button>
+              {/* Final Submit Button with Authentication Enforcement */}
+              {isAuthenticated && user ? (
+                <button
+                  type="submit"
+                  className="w-full bg-[#1A3B2B] hover:bg-[#2A5A43] text-white font-bold py-4 px-4 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center space-x-2 transition-all shadow-xl hover:-translate-y-0.5 cursor-pointer"
+                >
+                  <Truck className="w-4 h-4 text-[#C29B38]" />
+                  <span>Confirm Cash on Delivery Order (₹{finalPayable})</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthError('Please sign in or create an account in Step 1 to place your order.');
+                    const el = document.getElementById('step-1-auth');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="w-full bg-[#9C3B24] hover:bg-[#802F1C] text-white font-bold py-4 px-4 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center space-x-2 transition-all shadow-lg cursor-pointer"
+                >
+                  <Lock className="w-4 h-4 text-[#E7C875]" />
+                  <span>Sign In in Step 1 to Place Order</span>
+                </button>
+              )}
 
               <div className="text-center text-[10px] text-[#7A8580] pt-1 space-y-1">
                 <p className="flex items-center justify-center space-x-1">
