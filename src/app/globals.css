@@ -1,24 +1,27 @@
 @import "tailwindcss";
 
-@layer base {
-  :root {
-    --brand-primary: #1A3B2B;
-    --brand-primary-light: #2A5A43;
-    --brand-gold: #C29B38;
-    --brand-gold-light: #FBF7EE;
-    --brand-terracotta: #9C3B24;
-    --brand-bg: #FAF8F5;
-    --brand-surface: #FFFFFF;
-    --brand-border: #E8E2D8;
-    --brand-text: #1C201D;
-    --brand-muted: #5F6762;
-  }
+:root {
+  --brand-primary: #1A3B2B;
+  --brand-primary-light: #2A5A43;
+  --brand-gold: #C29B38;
+  --brand-gold-light: #FBF7EE;
+  --brand-terracotta: #9C3B24;
+  --brand-bg: #FAF8F5;
+  --brand-surface: #FFFFFF;
+  --brand-border: #E8E2D8;
+  --brand-text: #1C201D;
+  --brand-muted: #5F6762;
+}
 
-  body {
-    background-color: var(--brand-bg);
-    color: var(--brand-text);
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-  }
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #FAF8F5;
+  color: #1C201D;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-serif {
+  font-family: 'Playfair Display', Georgia, Cambria, 'Times New Roman', serif;
 }
 
 /* Custom smooth scroll and luxury scrollbar */
