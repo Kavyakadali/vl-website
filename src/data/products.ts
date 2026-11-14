@@ -88,8 +88,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       transparency: 'Opaque luxury density',
     },
     images: [
-      'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&q=80&w=1000',
-      'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&q=80&w=1000'
+      'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&q=80&w=1000',
+      'https://images.unsplash.com/photo-1581044777550-4cfa60707c03?auto=format&fit=crop&q=80&w=1000'
     ],
     variants: [
       { id: 'v3-1', size: 'S (Comfort Fit)', color: 'Sage Green', colorHex: '#879782', stock: 4 },

@@ -54,7 +54,7 @@ export default function HomePage() {
       title: 'Linen Women’s Essentials',
       subtitle: 'Relaxed Fit Two-Piece Outfits & Tunics',
       slug: 'Linen+Essentials',
-      image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&q=80&w=800',
+      image: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&q=80&w=800',
       tag: 'All-Day Wear',
     },
   ];
