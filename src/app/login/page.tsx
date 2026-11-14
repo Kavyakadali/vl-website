@@ -66,13 +66,13 @@ export default function LoginPage() {
     );
   }
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
     setIsLoading(true);
 
-    setTimeout(() => {
-      const res = login(username, password);
+    try {
+      const res = await login(username, password);
       setIsLoading(false);
       if (res.success) {
         if (res.role === 'admin') {
@@ -83,23 +83,29 @@ export default function LoginPage() {
       } else {
         setErrorMessage(res.error || 'Incorrect username or password. Please try again.');
       }
-    }, 300);
+    } catch {
+      setIsLoading(false);
+      setErrorMessage('Login failed. Please try again.');
+    }
   };
 
-  const handleSignupSubmit = (e: React.FormEvent) => {
+  const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
     setIsLoading(true);
 
-    setTimeout(() => {
-      const res = signup({ username, password, name, email, phone });
+    try {
+      const res = await signup({ username, password, name, email, phone });
       setIsLoading(false);
       if (res.success) {
         router.push('/account');
       } else {
         setErrorMessage(res.error || 'Registration failed. Please check your information.');
       }
-    }, 300);
+    } catch {
+      setIsLoading(false);
+      setErrorMessage('Registration failed. Please check your information.');
+    }
   };
 
   return (

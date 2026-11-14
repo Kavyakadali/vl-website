@@ -58,8 +58,8 @@ function HeaderContent() {
   return (
     <>
       {/* Top Announcement Bar - Pixel-Perfect Alignment */}
-      <aside aria-label="Store Announcements" className="bg-[#1A3B2B] text-[#FAF8F5] text-xs py-2 border-b border-[#2A5A43]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+      <aside aria-label="Store Announcements" className="bg-[#1A3B2B] text-[#FAF8F5] text-xs py-2.5 border-b border-[#2A5A43]">
+        <div className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <span className="w-2 h-2 rounded-full bg-[#C29B38] animate-pulse"></span>
             <p className="font-medium text-[11px] sm:text-xs">
@@ -96,7 +96,7 @@ function HeaderContent() {
 
       {/* Main Header Navbar - Active Route Highlighting, Zero Overlap */}
       <header className="sticky top-0 z-40 bg-[#FAF8F5] border-b border-[#E8E2D8] shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
           <div className="flex items-center justify-between h-20 gap-3 sm:gap-6">
             
             {/* Left: Mobile Menu Toggle + Brand Logo + Seamless Desktop Nav */}

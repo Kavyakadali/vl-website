@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import {
@@ -18,20 +18,42 @@ import {
   Clock,
   Scissors,
   Zap,
-  MessageCircle
+  MessageCircle,
+  Loader2
 } from 'lucide-react';
 import { INITIAL_PRODUCTS } from '@/data/products';
+import { Product } from '@/types';
 import { useCart } from '@/context/CartContext';
 import { BRAND_CONFIG } from '@/config/brand';
 import PincodeChecker from '@/components/PincodeChecker';
 import ProductCard from '@/components/ProductCard';
+import { fetchProductBySlugOrId } from '@/services/api';
 
 export default function ProductDetailPage() {
   const router = useRouter();
   const params = useParams();
   const slug = params?.slug as string;
 
-  const product = INITIAL_PRODUCTS.find((p) => p.slug === slug);
+  const fallbackProduct = INITIAL_PRODUCTS.find((p) => p.slug === slug || p.id === slug);
+  const [product, setProduct] = useState<Product | null>(fallbackProduct || null);
+  const [isLoading, setIsLoading] = useState(!fallbackProduct);
+
+  useEffect(() => {
+    fetchProductBySlugOrId(slug)
+      .then((data) => {
+        if (data) {
+          setProduct(data);
+        } else if (fallbackProduct) {
+          setProduct(fallbackProduct);
+        }
+      })
+      .catch(() => {
+        if (fallbackProduct) setProduct(fallbackProduct);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [slug]);
 
   const { addToCart, toggleWishlist, isWishlisted } = useCart();
 
@@ -39,6 +61,17 @@ export default function ProductDetailPage() {
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [showShareNotification, setShowShareNotification] = useState(false);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center p-8">
+        <div className="flex flex-col items-center space-y-3">
+          <Loader2 className="w-8 h-8 animate-spin text-[#1A3B2B]" />
+          <p className="text-sm text-[#5F6762]">Loading product details from database...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     return notFound();
@@ -73,7 +106,7 @@ export default function ProductDetailPage() {
   return (
     <div className="min-h-screen bg-[#FAF8F5] pb-24 lg:pb-16">
       {/* Breadcrumb Navigation */}
-      <nav aria-label="Breadcrumb" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-xs text-[#5F6762] flex items-center space-x-2">
+      <nav aria-label="Breadcrumb" className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 py-4 text-xs text-[#5F6762] flex items-center space-x-2">
         <Link href="/" className="hover:text-[#1A3B2B]">Home</Link>
         <ChevronRight className="w-3.5 h-3.5" />
         <Link href="/shop" className="hover:text-[#1A3B2B]">Collections</Link>
@@ -88,7 +121,7 @@ export default function ProductDetailPage() {
       </nav>
 
       {/* Main PDP Grid */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2">
+      <main className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pt-2">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
           
           {/* Left Column: Image Gallery with Zoom Preview */}

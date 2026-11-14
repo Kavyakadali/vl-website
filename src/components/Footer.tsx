@@ -7,7 +7,7 @@ export default function Footer() {
   return (
     <footer className="bg-[#14261C] text-[#FAF8F5] pt-16 pb-12 border-t border-[#234231]">
       {/* 4 Pillars Trust Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 border-b border-[#234231]">
+      <div className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pb-12 border-b border-[#234231]">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
           <div className="flex items-start space-x-3.5">
             <div className="p-2.5 rounded-xl bg-[#1D3B2B] text-[#C29B38] border border-[#2E5842]">
@@ -52,7 +52,7 @@ export default function Footer() {
       </div>
 
       {/* Main Footer Links */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
+      <div className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pt-12">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8 lg:gap-12">
           {/* Brand Info */}
           <div className="md:col-span-2">

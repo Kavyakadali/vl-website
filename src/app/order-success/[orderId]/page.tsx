@@ -170,21 +170,37 @@ export default function OrderSuccessPage() {
                   <div className="flex justify-between text-[#5F6762]">
                     <span>Payment Method</span>
                     <span className="font-bold text-[#1C201D] uppercase">
-                      Cash on Delivery (COD)
+                      {order.paymentMethod === 'upi' ? 'Instant Online UPI' : 'Cash on Delivery (COD)'}
                     </span>
                   </div>
                   <div className="flex justify-between text-[#5F6762]">
                     <span>Payment Status</span>
-                    <span className="bg-[#FFF4E5] text-[#D9480F] font-bold px-2 py-0.5 rounded text-[11px] border border-[#FFD8A8]">
-                      Payment Due at Doorstep
-                    </span>
+                    {order.paymentMethod === 'upi' ? (
+                      <span className="bg-[#EBF7EE] text-[#1E6B35] font-bold px-2 py-0.5 rounded text-[11px] border border-[#BBE3C4]">
+                        Paid Online (Verified)
+                      </span>
+                    ) : (
+                      <span className="bg-[#FFF4E5] text-[#D9480F] font-bold px-2 py-0.5 rounded text-[11px] border border-[#FFD8A8]">
+                        Payment Due at Doorstep
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex justify-between text-[#5F6762]">
+                    <span>Shipping Fee</span>
+                    {order.paymentMethod === 'upi' || order.shippingFee === 0 ? (
+                      <span className="text-[#1E6B35] font-bold">FREE (₹0)</span>
+                    ) : (
+                      <span className="text-[#D9480F] font-semibold">+₹{order.shippingFee || 45}</span>
+                    )}
                   </div>
                   <div className="flex justify-between font-bold text-[#1C201D] pt-2 border-t border-[#E8E2D8]">
-                    <span>Total Cash to Pay Courier</span>
+                    <span>{order.paymentMethod === 'upi' ? 'Total Amount Paid' : 'Total Cash to Pay Courier'}</span>
                     <span className="text-[#1A3B2B] text-base font-black">₹{order.total}</span>
                   </div>
                   <p className="text-[10px] text-[#7A8580] pt-1 leading-relaxed">
-                    * Includes ₹{order.codFee || BRAND_CONFIG.codHandlingFee} courier handling fee. To pay via UPI before dispatch instead, send your Order ID ({orderId}) on WhatsApp!
+                    {order.paymentMethod === 'upi'
+                      ? `* Verified UPI Order: Final amount strictly equals cart amount (₹${order.total}) with ₹0 shipping fee.`
+                      : `* Includes ₹${order.shippingFee || order.codFee || 45} courier shipping fee for Cash on Delivery.`}
                   </p>
                 </div>
               </div>

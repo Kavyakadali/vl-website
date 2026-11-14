@@ -41,13 +41,13 @@ export default function AuthModal() {
 
   if (!isAuthModalOpen) return null;
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
     setIsLoading(true);
 
-    setTimeout(() => {
-      const res = login(username, password);
+    try {
+      const res = await login(username, password);
       setIsLoading(false);
       if (res.success) {
         if (res.role === 'admin') {
@@ -56,23 +56,29 @@ export default function AuthModal() {
       } else {
         setErrorMessage(res.error || 'Incorrect username or password. Please try again.');
       }
-    }, 300);
+    } catch {
+      setIsLoading(false);
+      setErrorMessage('An unexpected error occurred during login.');
+    }
   };
 
-  const handleSignupSubmit = (e: React.FormEvent) => {
+  const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
     setIsLoading(true);
 
-    setTimeout(() => {
-      const res = signup({ username, password, name, email, phone });
+    try {
+      const res = await signup({ username, password, name, email, phone });
       setIsLoading(false);
       if (res.success) {
         // Logged in automatically
       } else {
         setErrorMessage(res.error || 'Registration failed. Please verify your details.');
       }
-    }, 300);
+    } catch {
+      setIsLoading(false);
+      setErrorMessage('An unexpected error occurred during registration.');
+    }
   };
 
   return (

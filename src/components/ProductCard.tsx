@@ -135,18 +135,19 @@ export default function ProductCard({ product }: ProductCardProps) {
       </div>
 
       {/* Action Buttons: Quick Add & Buy Now */}
-      <div className="px-4 pb-4 sm:px-5 sm:pb-5 pt-0 grid grid-cols-2 gap-2.5">
+      <div className="px-3.5 pb-4 sm:px-4 sm:pb-4.5 pt-0 flex items-center gap-2">
         <button
           onClick={handleQuickAdd}
-          className="w-full flex items-center justify-center space-x-1.5 py-2.5 px-3 text-xs font-bold rounded-xl border border-[#1A3B2B] text-[#1A3B2B] hover:bg-[#1A3B2B] hover:text-white transition-colors"
+          className="flex-1 min-w-0 flex items-center justify-center space-x-1.5 py-2.5 px-2.5 text-xs font-bold rounded-xl border border-[#1A3B2B] text-[#1A3B2B] hover:bg-[#1A3B2B] hover:text-white transition-colors whitespace-nowrap"
+          title="Add to Shopping Bag"
         >
-          <ShoppingBag className="w-3.5 h-3.5" />
-          <span>Add to Bag</span>
+          <ShoppingBag className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">Add to Bag</span>
         </button>
 
         <button
           onClick={handleBuyNow}
-          className="w-full flex items-center justify-center space-x-1 py-2.5 px-3 text-xs font-bold rounded-xl bg-[#C29B38] text-white hover:bg-[#A9842A] transition-colors shadow-sm"
+          className="flex-1 min-w-0 flex items-center justify-center space-x-1 py-2.5 px-2.5 text-xs font-bold rounded-xl bg-[#C29B38] text-white hover:bg-[#A9842A] transition-colors shadow-xs whitespace-nowrap"
         >
           <span>Buy Now</span>
         </button>

@@ -25,10 +25,28 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { BRAND_CONFIG } from '@/config/brand';
+import { orderApi } from '@/services/api';
+
+const formatDate = (val?: any): string => {
+  if (!val) return 'Recent';
+  try {
+    const d = new Date(val);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+    }
+  } catch {
+    // fallback
+  }
+  return typeof val === 'string' && val.trim() !== '' ? val : 'Recent';
+};
 
 export default function AccountPage() {
   const router = useRouter();
-  const { user, isAuthenticated, isAdmin, logout, updateProfile, openAuthModal } = useAuth();
+  const { user, token, isAuthenticated, isAdmin, logout, updateProfile, openAuthModal } = useAuth();
   const { wishlist } = useCart();
 
   const [activeTab, setActiveTab] = useState<'orders' | 'address' | 'profile'>('orders');
@@ -54,26 +72,56 @@ export default function AccountPage() {
 
   const [saveMessage, setSaveMessage] = useState('');
 
-  // Load orders strictly for the currently logged in customer
+  // Load orders from backend DB with fallback to localStorage
   useEffect(() => {
-    try {
-      const allOrders = JSON.parse(localStorage.getItem('vl_orders') || '[]');
-      if (user) {
-        // Filter orders belonging to this user (by userId, username, email, phone, or recipient name)
-        const userOrders = allOrders.filter(
-          (o: any) =>
-            o.userId === user.id ||
-            (user.username && o.userUsername?.toLowerCase() === user.username.toLowerCase()) ||
-            (user.email && (o.customerEmail?.toLowerCase() === user.email.toLowerCase() || o.shippingAddress?.email?.toLowerCase() === user.email.toLowerCase())) ||
-            (user.phone && (o.customerPhone === user.phone || o.shippingAddress?.phone === user.phone)) ||
-            (user.name && o.customerName?.toLowerCase() === user.name.toLowerCase())
-        );
-        setOrders(userOrders);
+    const loadOrders = async () => {
+      let loadedFromDb = false;
+      if (token) {
+        try {
+          const res = await orderApi.getUserOrders(token);
+          if (res.success && Array.isArray(res.data?.orders) && res.data.orders.length > 0) {
+            const mappedOrders = res.data.orders.map((o: any) => ({
+              id: String(o.id),
+              orderNumber: String(o.id),
+              userId: String(o.userId),
+              total: Number(o.totalAmount),
+              orderStatus: o.status === 'PLACED' ? 'Confirmed' : o.status === 'SHIPPED' ? 'Dispatched' : o.status,
+              paymentMethod: 'cod',
+              paymentStatus: o.status === 'DELIVERED' ? 'paid' : 'pending',
+              createdAt: o.createdAt,
+              items: [],
+              shippingAddress: user?.address || { city: 'Regional Center', state: 'Tamil Nadu', pincode: '600001' },
+            }));
+            setOrders(mappedOrders);
+            loadedFromDb = true;
+          }
+        } catch {
+          // ignore
+        }
       }
-    } catch {
-      // Ignore
-    }
-  }, [user]);
+
+      if (!loadedFromDb) {
+        try {
+          const allOrders = JSON.parse(localStorage.getItem('vl_orders') || '[]');
+          if (user) {
+            const userOrders = allOrders.filter(
+              (o: any) =>
+                o.userId === user.id ||
+                (user.username && o.userUsername?.toLowerCase() === user.username.toLowerCase()) ||
+                (user.email && (o.customerEmail?.toLowerCase() === user.email.toLowerCase() || o.shippingAddress?.email?.toLowerCase() === user.email.toLowerCase())) ||
+                (user.phone && (o.customerPhone === user.phone || o.shippingAddress?.phone === user.phone)) ||
+                (user.name && o.customerName?.toLowerCase() === user.name.toLowerCase())
+            );
+            setOrders(userOrders);
+          }
+        } catch {
+          // Ignore
+        }
+      }
+    };
+
+    loadOrders();
+  }, [user, token]);
 
   useEffect(() => {
     if (user) {
@@ -166,7 +214,7 @@ export default function AccountPage() {
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] py-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
         
         {/* Account Header Hero */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E8E2D8] shadow-sm mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -332,7 +380,7 @@ export default function AccountPage() {
                                 </span>
                               </div>
                               <p className="text-[11px] text-[#5F6762] mt-0.5">
-                                Placed on {new Date(ord.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) || 'Recent'} • {ord.paymentMethod === 'cod' ? 'Cash on Delivery (+₹45)' : 'Online Payment'}
+                                Placed on {formatDate(ord.createdAt)} • {ord.paymentMethod === 'cod' ? 'Cash on Delivery (+₹45)' : 'Online Payment'}
                               </p>
                             </div>
 
@@ -346,24 +394,36 @@ export default function AccountPage() {
 
                           {/* Items Preview */}
                           <div className="py-4 space-y-3">
-                            {ord.items?.map((it: any, idx: number) => (
-                              <div key={idx} className="flex items-center space-x-3 text-xs">
-                                <img
-                                  src={it.product?.images?.[0] || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=400'}
-                                  alt={it.product?.title || 'Product'}
-                                  className="w-12 h-14 object-cover rounded-lg border border-[#E8E2D8]"
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-semibold text-[#1C201D] truncate">{it.product?.title}</p>
-                                  <p className="text-[11px] text-[#5F6762]">
-                                    {it.variant?.size} {it.variant?.color ? `• ${it.variant.color}` : ''} × {it.quantity}
-                                  </p>
+                            {ord.items?.map((it: any, idx: number) => {
+                              const itemImage =
+                                it.image ||
+                                it.product?.images?.[0] ||
+                                'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=400';
+                              const itemTitle =
+                                it.title ||
+                                it.name ||
+                                it.product?.title ||
+                                'VL Designer Piece';
+                              const itemPrice = it.price || it.product?.price || 0;
+                              return (
+                                <div key={idx} className="flex items-center space-x-3 text-xs">
+                                  <img
+                                    src={itemImage}
+                                    alt={itemTitle}
+                                    className="w-12 h-14 object-cover rounded-lg border border-[#E8E2D8]"
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-[#1C201D] truncate">{itemTitle}</p>
+                                    <p className="text-[11px] text-[#5F6762]">
+                                      {it.variant?.size ? `${it.variant.size} ` : ''}{it.variant?.color ? `• ${it.variant.color} ` : ''}× {it.quantity || 1}
+                                    </p>
+                                  </div>
+                                  <span className="font-bold text-[#1A3B2B]">
+                                    ₹{itemPrice * (it.quantity || 1)}
+                                  </span>
                                 </div>
-                                <span className="font-bold text-[#1A3B2B]">
-                                  ₹{(it.product?.price || 0) * (it.quantity || 1)}
-                                </span>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
 
                           {/* Footer Actions */}

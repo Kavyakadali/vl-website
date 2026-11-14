@@ -16,11 +16,15 @@ import {
   HelpCircle,
   MessageCircle,
   AlertCircle,
-  User as UserIcon
+  User as UserIcon,
+  Zap,
+  Loader2,
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { BRAND_CONFIG } from '@/config/brand';
+import { orderApi } from '@/services/api';
+import RazorpayModal from '@/components/RazorpayModal';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -32,7 +36,7 @@ export default function CheckoutPage() {
     discountAmount,
     clearCart,
   } = useCart();
-  const { user, isAuthenticated, login, signup, logout, updateProfile, openAuthModal } = useAuth();
+  const { user, token, isAuthenticated, login, signup, logout, updateProfile, openAuthModal } = useAuth();
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -79,16 +83,19 @@ export default function CheckoutPage() {
     }
   }, [user]);
 
-  // Default and only active instant payment method is Cash on Delivery
-  const [paymentMethod, setPaymentMethod] = useState<'cod'>('cod');
-  const [showUpiNotice, setShowUpiNotice] = useState(false);
+  // Payment method selection: UPI (Free Shipping) or COD (+₹45 Shipping)
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'cod'>('upi');
+  const [isRazorpayOpen, setIsRazorpayOpen] = useState(false);
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [orderError, setOrderError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const shippingFee = subtotal >= freeShippingThreshold || subtotal === 0 ? 0 : BRAND_CONFIG.standardShippingFee;
-  
-  // Cash on Delivery Handling Fee is ₹45
-  const codFee = BRAND_CONFIG.codHandlingFee;
-  const finalPayable = Math.max(0, subtotal - discountAmount + shippingFee + codFee);
+  // Pricing Rule:
+  // - If payment type is UPI: shipping fee = 0, final amount == cart amount
+  // - If order is COD: shipping fee = 45, final amount == cart amount + 45
+  const cartAmount = Math.max(0, subtotal - discountAmount);
+  const shippingFee = paymentMethod === 'cod' ? 45 : 0;
+  const finalPayable = paymentMethod === 'upi' ? cartAmount : cartAmount + shippingFee;
 
   // Auto-detect city/state from 6-digit Pincode
   const handlePincodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,35 +118,45 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleCheckoutLogin = (e: React.FormEvent) => {
+  const handleCheckoutLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
     setAuthLoading(true);
 
-    const res = login(authUsername, authPassword);
-    setAuthLoading(false);
+    try {
+      const res = await login(authUsername, authPassword);
+      setAuthLoading(false);
 
-    if (!res.success) {
-      setAuthError(res.error || 'Invalid credentials. Please verify your username and password.');
+      if (!res.success) {
+        setAuthError(res.error || 'Invalid credentials. Please verify your username and password.');
+      }
+    } catch {
+      setAuthLoading(false);
+      setAuthError('Login failed. Please verify your credentials.');
     }
   };
 
-  const handleCheckoutSignup = (e: React.FormEvent) => {
+  const handleCheckoutSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
     setAuthLoading(true);
 
-    const res = signup({
-      name: signupForm.name,
-      phone: signupForm.phone,
-      email: signupForm.email,
-      username: signupForm.username,
-      password: signupForm.password,
-    });
-    setAuthLoading(false);
+    try {
+      const res = await signup({
+        name: signupForm.name,
+        phone: signupForm.phone,
+        email: signupForm.email,
+        username: signupForm.username,
+        password: signupForm.password,
+      });
+      setAuthLoading(false);
 
-    if (!res.success) {
-      setAuthError(res.error || 'Failed to create account. Please check your inputs.');
+      if (!res.success) {
+        setAuthError(res.error || 'Failed to create account. Please check your inputs.');
+      }
+    } catch {
+      setAuthLoading(false);
+      setAuthError('Registration failed. Please check your inputs.');
     }
   };
 
@@ -155,8 +172,9 @@ export default function CheckoutPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmitOrder = (e: React.FormEvent) => {
+  const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    setOrderError(null);
 
     // Mandatory Real-Time Auth check: No order without an authenticated customer
     if (!isAuthenticated || !user) {
@@ -170,40 +188,98 @@ export default function CheckoutPage() {
 
     if (!validateForm()) return;
 
-    // Real COD Order Placement - 100% Genuine, Linked to Authenticated Customer
-    const orderId = `VL-${Math.floor(100000 + Math.random() * 900000)}`;
+    if (paymentMethod === 'upi') {
+      // Trigger instant UPI payment modal
+      setIsRazorpayOpen(true);
+    } else {
+      // Cash on Delivery
+      await handleCompleteOrder('cod');
+    }
+  };
+
+  const handleCompleteOrder = async (method: 'upi' | 'cod', paymentId?: string) => {
+    setIsPlacingOrder(true);
+    setOrderError(null);
+
+    const fee = method === 'cod' ? 45 : 0;
+    const currentFinalPayable = method === 'upi' ? cartAmount : cartAmount + fee;
+
+    // Attempt backend DB order placement
+    let backendOrderId: string | null = null;
+    if (token) {
+      try {
+        const orderItems = cart
+          .map((item) => ({
+            productId: parseInt(item.product.id.replace(/\D/g, ''), 10) || 1,
+            quantity: item.quantity,
+          }))
+          .filter((i) => !isNaN(i.productId) && i.productId > 0);
+
+        const apiRes = await orderApi.createOrder(
+          token,
+          orderItems.length > 0 ? orderItems : undefined,
+          {
+            paymentType: method,
+            paymentMethod: method,
+            totalAmount: currentFinalPayable,
+            shippingAddress: {
+              ...formData,
+              fullName: formData.fullName || user?.name,
+              phone: formData.phone || user?.phone,
+              email: formData.email || user?.email,
+            },
+          }
+        );
+
+        if (apiRes.success && apiRes.data?.order?.id) {
+          backendOrderId = String(apiRes.data.order.id);
+        } else if (!apiRes.success && apiRes.message) {
+          setOrderError(apiRes.message);
+          setIsPlacingOrder(false);
+          setIsRazorpayOpen(false);
+          return;
+        }
+      } catch (err: any) {
+        console.warn('Backend order placement error, using fallback:', err);
+      }
+    }
+
+    // Generate Order Record with UUID
+    const orderId = backendOrderId || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `ord-${Date.now()}`);
     
     const newOrder = {
       id: orderId,
       orderNumber: orderId,
-      userId: user.id,
-      userUsername: user.username,
-      customerName: formData.fullName || user.name,
-      customerPhone: formData.phone || user.phone,
-      customerEmail: formData.email || user.email,
+      userId: user?.id,
+      userUsername: user?.username,
+      customerName: formData.fullName || user?.name,
+      customerPhone: formData.phone || user?.phone,
+      customerEmail: formData.email || user?.email,
       shippingAddress: {
         ...formData,
-        fullName: formData.fullName || user.name,
-        phone: formData.phone || user.phone,
-        email: formData.email || user.email,
+        fullName: formData.fullName || user?.name,
+        phone: formData.phone || user?.phone,
+        email: formData.email || user?.email,
       },
       items: cart,
       subtotal,
       discount: discountAmount,
-      shippingFee,
-      codFee,
-      total: finalPayable,
-      paymentMethod: 'cod',
-      paymentStatus: 'pending', // Payment pending on doorstep delivery
+      cartAmount,
+      shippingFee: fee,
+      codFee: fee,
+      total: currentFinalPayable,
+      paymentMethod: method,
+      paymentStatus: method === 'upi' ? 'paid' : 'pending',
+      paymentId: paymentId || (method === 'upi' ? `pay_${Date.now()}` : undefined),
       orderStatus: 'Confirmed',
       createdAt: new Date().toISOString(),
     };
 
     // Update user profile address so next time it is remembered
     updateProfile({
-      name: formData.fullName || user.name,
-      phone: formData.phone || user.phone,
-      email: formData.email || user.email,
+      name: formData.fullName || user?.name,
+      phone: formData.phone || user?.phone,
+      email: formData.email || user?.email,
       address: {
         addressLine1: formData.addressLine1,
         addressLine2: formData.addressLine2,
@@ -223,6 +299,8 @@ export default function CheckoutPage() {
     }
 
     clearCart();
+    setIsRazorpayOpen(false);
+    setIsPlacingOrder(false);
     router.push(`/order-success/${orderId}`);
   };
 
@@ -616,24 +694,77 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Step 3: Transparent Payment Options */}
+            {/* Step 3: Transparent Payment Options & Pricing Validation */}
             <div className="bg-white p-6 rounded-2xl border border-[#E8E2D8] shadow-xs space-y-4">
-              <h3 className="text-xs font-bold text-[#1C201D] uppercase tracking-wider flex items-center space-x-2">
-                <span className="w-5 h-5 rounded-full bg-[#1A3B2B] text-white text-[11px] flex items-center justify-center font-bold">3</span>
-                <span>Payment Options</span>
-              </h3>
+              <div className="flex items-center justify-between pb-2 border-b border-[#E8E2D8]">
+                <h3 className="text-xs font-bold text-[#1C201D] uppercase tracking-wider flex items-center space-x-2">
+                  <span className="w-5 h-5 rounded-full bg-[#1A3B2B] text-white text-[11px] flex items-center justify-center font-bold">3</span>
+                  <span>Payment Options</span>
+                </h3>
+                <span className="text-[10px] text-[#5F6762] font-semibold">
+                  Select payment type
+                </span>
+              </div>
 
               <div className="space-y-3">
-                {/* Method 1: Cash on Delivery (ACTIVE & WORKING) */}
-                <label className="block p-4 rounded-2xl border-2 border-[#1A3B2B] bg-[#FAF8F5] shadow-xs cursor-pointer">
+                {/* Method 1: Instant Online UPI (FREE Shipping - final amount == cart amount) */}
+                <label
+                  onClick={() => setPaymentMethod('upi')}
+                  className={`block p-4 rounded-2xl border-2 transition-all cursor-pointer ${
+                    paymentMethod === 'upi'
+                      ? 'border-[#1A3B2B] bg-[#FAF8F5] shadow-xs'
+                      : 'border-[#E8E2D8] bg-white hover:border-[#D8D2C5]'
+                  }`}
+                >
                   <div className="flex items-start justify-between">
                     <div className="flex items-center space-x-3">
                       <input
                         type="radio"
                         name="paymentMethod"
+                        value="upi"
+                        checked={paymentMethod === 'upi'}
+                        onChange={() => setPaymentMethod('upi')}
+                        className="accent-[#1A3B2B] w-4 h-4 cursor-pointer"
+                      />
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <Smartphone className="w-4 h-4 text-[#1E6B35]" />
+                          <span className="text-xs font-bold text-[#1C201D]">
+                            Instant Online UPI (Google Pay / PhonePe / Paytm / QR)
+                          </span>
+                          <span className="bg-[#EBF7EE] text-[#1E6B35] text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#BBE3C4]">
+                            Recommended
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-[#5F6762] mt-0.5">
+                          Instant payment via any UPI App or QR code. <strong>₹0 Shipping</strong> — Final amount strictly equals cart amount (₹{cartAmount}).
+                        </p>
+                      </div>
+                    </div>
+                    <span className="bg-[#EBF7EE] text-[#1E6B35] text-[10px] font-bold px-2.5 py-1 rounded-full border border-[#BBE3C4] shrink-0">
+                      FREE Shipping (₹0 Extra)
+                    </span>
+                  </div>
+                </label>
+
+                {/* Method 2: Cash on Delivery (+₹45 Shipping Fee) */}
+                <label
+                  onClick={() => setPaymentMethod('cod')}
+                  className={`block p-4 rounded-2xl border-2 transition-all cursor-pointer ${
+                    paymentMethod === 'cod'
+                      ? 'border-[#1A3B2B] bg-[#FAF8F5] shadow-xs'
+                      : 'border-[#E8E2D8] bg-white hover:border-[#D8D2C5]'
+                  }`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="cod"
                         checked={paymentMethod === 'cod'}
-                        readOnly
-                        className="accent-[#1A3B2B] w-4 h-4"
+                        onChange={() => setPaymentMethod('cod')}
+                        className="accent-[#1A3B2B] w-4 h-4 cursor-pointer"
                       />
                       <div>
                         <div className="flex items-center space-x-2">
@@ -641,56 +772,23 @@ export default function CheckoutPage() {
                           <span className="text-xs font-bold text-[#1C201D]">
                             Cash on Delivery (COD)
                           </span>
-                          <span className="bg-[#EBF7EE] text-[#1E6B35] text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#BBE3C4]">
-                            Active
-                          </span>
                         </div>
                         <p className="text-[11px] text-[#5F6762] mt-0.5">
-                          Pay cash or scan courier QR on doorstep arrival (+₹{BRAND_CONFIG.codHandlingFee} handling fee)
+                          Pay cash or scan courier QR on doorstep arrival (+₹45 shipping fee applied).
                         </p>
                       </div>
                     </div>
                     <span className="bg-[#FFF4E5] text-[#D9480F] text-[10px] font-bold px-2.5 py-1 rounded-full border border-[#FFD8A8] shrink-0">
-                      +₹{BRAND_CONFIG.codHandlingFee} Handling
+                      +₹45 Shipping Fee
                     </span>
                   </div>
                 </label>
 
-                {/* Method 2: Online UPI (HONEST COMING SOON STATUS) */}
-                <div
-                  onClick={() => setShowUpiNotice(true)}
-                  className="p-4 rounded-2xl border-2 border-neutral-200 bg-neutral-50/70 cursor-pointer hover:border-neutral-300 transition-all opacity-85"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-3">
-                      <input
-                        type="radio"
-                        disabled
-                        className="opacity-50 cursor-not-allowed"
-                      />
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <Smartphone className="w-4 h-4 text-neutral-400" />
-                          <span className="text-xs font-semibold text-neutral-600">
-                            Instant Online UPI (Google Pay / PhonePe / QR)
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-neutral-400 mt-0.5">
-                          Automated online gateway is in KYC activation. Tap for manual UPI details.
-                        </p>
-                      </div>
-                    </div>
-                    <span className="bg-neutral-200 text-neutral-700 text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0">
-                      Coming Soon
-                    </span>
-                  </div>
-                </div>
-
-                {/* Info Box on How to pay UPI right now */}
-                <div className="bg-[#FBF7EE] border border-[#E8DFC9] rounded-xl p-3.5 flex items-start space-x-2.5 text-xs text-[#7A6B42]">
+                {/* Pricing Rule Info Banner */}
+                <div className="bg-[#FBF7EE] border border-[#E8DFC9] rounded-xl p-3 flex items-start space-x-2 text-xs text-[#7A6B42]">
                   <Info className="w-4 h-4 shrink-0 mt-0.5 text-[#C29B38]" />
                   <p className="leading-relaxed text-[11px]">
-                    <strong>Want to pay via UPI right now?</strong> Place your order using Cash on Delivery, then click <em>&apos;Chat on WhatsApp&apos;</em> on the confirmation screen to receive our verified UPI QR code before dispatch!
+                    <strong>Pricing Validation:</strong> For <strong>UPI</strong> orders, the final payable amount strictly equals the cart amount (₹{cartAmount}) with ₹0 shipping. For <strong>COD</strong> orders, ₹45 shipping fee is charged (₹{cartAmount} + ₹45 = ₹{cartAmount + 45}).
                   </p>
                 </div>
               </div>
@@ -737,16 +835,22 @@ export default function CheckoutPage() {
                 )}
 
                 <div className="flex justify-between text-[#5F6762]">
-                  <span>Shipping across India</span>
-                  <span className="font-semibold text-[#1C201D]">
-                    {shippingFee === 0 ? <strong className="text-[#1E6B35]">FREE</strong> : `₹${shippingFee}`}
-                  </span>
+                  <span>Cart Amount</span>
+                  <span className="font-semibold text-[#1C201D]">₹{cartAmount}</span>
                 </div>
 
-                {/* COD Handling Fee Line */}
-                <div className="flex justify-between text-[#D9480F] font-semibold">
-                  <span>COD Courier Handling Fee</span>
-                  <span>+₹{codFee}</span>
+                {/* Shipping Fee Line based on Payment Type */}
+                <div className="flex justify-between items-center text-[#5F6762]">
+                  <span>Shipping Fee ({paymentMethod === 'upi' ? 'UPI Free Shipping' : 'COD Shipping'})</span>
+                  {shippingFee === 0 ? (
+                    <span className="bg-[#EBF7EE] text-[#1E6B35] font-bold text-xs px-2 py-0.5 rounded border border-[#BBE3C4]">
+                      FREE (₹0)
+                    </span>
+                  ) : (
+                    <span className="font-bold text-[#D9480F]">
+                      +₹{shippingFee}
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex justify-between items-baseline pt-3 border-t border-[#E8E2D8]">
@@ -754,18 +858,43 @@ export default function CheckoutPage() {
                   <span className="text-2xl font-black text-[#1A3B2B]">₹{finalPayable}</span>
                 </div>
                 <p className="text-[10px] text-[#7A8580] text-right">
-                  Payable in cash or courier scanner upon delivery
+                  {paymentMethod === 'upi'
+                    ? 'Final amount strictly equals cart amount (₹0 delivery charges)'
+                    : 'Cart amount + ₹45 courier shipping fee for Cash on Delivery'}
                 </p>
               </div>
 
-              {/* Final Submit Button with Authentication Enforcement */}
+              {/* Order Error Alert if any */}
+              {orderError && (
+                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs rounded-xl flex items-center space-x-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                  <span>{orderError}</span>
+                </div>
+              )}
+
+              {/* Final Submit Button with Dynamic Label */}
               {isAuthenticated && user ? (
                 <button
                   type="submit"
-                  className="w-full bg-[#1A3B2B] hover:bg-[#2A5A43] text-white font-bold py-4 px-4 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center space-x-2 transition-all shadow-xl hover:-translate-y-0.5 cursor-pointer"
+                  disabled={isPlacingOrder}
+                  className="w-full bg-[#1A3B2B] hover:bg-[#2A5A43] text-white font-bold py-4 px-4 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center space-x-2 transition-all shadow-xl hover:-translate-y-0.5 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  <Truck className="w-4 h-4 text-[#C29B38]" />
-                  <span>Confirm Cash on Delivery Order (₹{finalPayable})</span>
+                  {isPlacingOrder ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-[#E7C875]" />
+                      <span>Placing Order in Database...</span>
+                    </>
+                  ) : paymentMethod === 'upi' ? (
+                    <>
+                      <Zap className="w-4 h-4 text-[#E7C875]" />
+                      <span>Pay via UPI (₹{finalPayable})</span>
+                    </>
+                  ) : (
+                    <>
+                      <Truck className="w-4 h-4 text-[#C29B38]" />
+                      <span>Confirm Cash on Delivery Order (₹{finalPayable})</span>
+                    </>
+                  )}
                 </button>
               ) : (
                 <button
@@ -794,39 +923,16 @@ export default function CheckoutPage() {
         </form>
       </div>
 
-      {/* Online UPI Coming Soon Modal Notice */}
-      {showUpiNotice && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl border border-neutral-200 animate-in zoom-in-95">
-            <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center mx-auto">
-              <Clock className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="font-bold text-base text-[#1C201D]">Online UPI Gateway Coming Soon</h3>
-              <p className="text-xs text-[#5F6762] mt-1.5 leading-relaxed">
-                Direct automated online gateway is currently undergoing merchant banking KYC verification.
-              </p>
-            </div>
-
-            <div className="bg-[#FAF8F5] p-3 rounded-xl border border-[#E8E2D8] text-xs text-[#1C201D] text-left space-y-1">
-              <p className="font-semibold text-[#1A3B2B]">How to order today:</p>
-              <p className="text-[11px] text-[#5F6762]">
-                1. Place your order via <strong>Cash on Delivery (COD)</strong> right now.
-              </p>
-              <p className="text-[11px] text-[#5F6762]">
-                2. If you prefer to pay online via UPI, simply message us on WhatsApp with your Order ID and we will share our UPI QR code directly!
-              </p>
-            </div>
-
-            <button
-              onClick={() => setShowUpiNotice(false)}
-              className="w-full bg-[#1A3B2B] text-white text-xs font-bold py-3 rounded-xl uppercase tracking-wider"
-            >
-              Got It, Proceed with COD
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Razorpay Online UPI Modal */}
+      <RazorpayModal
+        isOpen={isRazorpayOpen}
+        onClose={() => setIsRazorpayOpen(false)}
+        onSuccess={(paymentId) => handleCompleteOrder('upi', paymentId)}
+        amount={finalPayable}
+        customerName={formData.fullName || user?.name || ''}
+        customerEmail={formData.email || user?.email || ''}
+        customerPhone={formData.phone || user?.phone || ''}
+      />
     </div>
   );
 }

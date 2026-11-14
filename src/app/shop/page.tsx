@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Filter, SlidersHorizontal, Sparkles, X, ChevronDown, Check } from 'lucide-react';
+import { Filter, SlidersHorizontal, Sparkles, X, ChevronDown, Check, Loader2 } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 import { INITIAL_PRODUCTS } from '@/data/products';
-import { ProductType } from '@/types';
+import { Product, ProductType } from '@/types';
 import { useCart } from '@/context/CartContext';
+import { fetchProductsFromApi } from '@/services/api';
 
 function ShopContent() {
   const { wishlist } = useCart();
@@ -15,12 +16,33 @@ function ShopContent() {
   const initialCategory = searchParams.get('category');
   const initialFilter = searchParams.get('filter');
 
+  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedType, setSelectedType] = useState<string>(initialType || 'all');
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory || 'all');
   const [isWishlistOnly, setIsWishlistOnly] = useState<boolean>(initialFilter === 'wishlist');
   const [sortBy, setSortBy] = useState<string>('featured');
   const [maxPrice, setMaxPrice] = useState<number>(3500);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  // Fetch original data from backend DB with fallback to INITIAL_PRODUCTS
+  useEffect(() => {
+    setIsLoading(true);
+    fetchProductsFromApi()
+      .then((data) => {
+        if (data && data.length > 0) {
+          setProducts(data);
+        } else {
+          setProducts(INITIAL_PRODUCTS);
+        }
+      })
+      .catch(() => {
+        setProducts(INITIAL_PRODUCTS);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
 
   // Sync state whenever URL query params change (from navbar clicks or browser navigation)
   useEffect(() => {
@@ -42,7 +64,7 @@ function ShopContent() {
   ];
 
   const filteredProducts = useMemo(() => {
-    return INITIAL_PRODUCTS.filter((product) => {
+    return products.filter((product) => {
       // Wishlist filter
       if (isWishlistOnly && !wishlist.includes(product.id)) {
         return false;
@@ -66,7 +88,7 @@ function ShopContent() {
       if (sortBy === 'rating') return b.rating - a.rating;
       return 0; // default featured
     });
-  }, [selectedType, selectedCategory, isWishlistOnly, wishlist, maxPrice, sortBy]);
+  }, [products, selectedType, selectedCategory, isWishlistOnly, wishlist, maxPrice, sortBy]);
 
   const resetFilters = () => {
     setSelectedType('all');
@@ -102,7 +124,7 @@ function ShopContent() {
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] py-8 sm:py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
         {/* Page Header */}
         <div className="border-b border-[#E8E2D8] pb-6 mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
@@ -272,7 +294,7 @@ function ShopContent() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-7">
                 {filteredProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}

@@ -258,7 +258,7 @@ export default function CartDrawer() {
                 </div>
 
                 <p className="text-[10px] text-[#7A8580] pt-0.5">
-                  * Note: Cash on Delivery has an extra ₹{BRAND_CONFIG.codHandlingFee} courier handling fee. Pay via UPI to save ₹{BRAND_CONFIG.codHandlingFee} + get 5% off.
+                  * Note: Pay via UPI for FREE shipping (final amount = cart amount). Cash on Delivery (COD) charges ₹45 for courier shipping.
                 </p>
 
                 <div className="flex justify-between text-sm font-bold text-[#1C201D] pt-2 border-t border-[#E8E2D8]">

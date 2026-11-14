@@ -58,7 +58,7 @@ export default function RazorpayModal({
         <div className="bg-emerald-50 px-5 py-2.5 border-b border-emerald-100 flex items-center justify-between text-xs text-emerald-900">
           <span className="flex items-center space-x-1 font-semibold">
             <Zap className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Instant 5% Discount Applied • ₹0 Handling Fee</span>
+            <span>₹0 Shipping Fee • Final Amount == Cart Amount</span>
           </span>
           <span className="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded">
             UPI Active

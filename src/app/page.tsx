@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Sparkles,
@@ -18,12 +18,30 @@ import {
 } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 import { INITIAL_PRODUCTS } from '@/data/products';
+import { Product } from '@/types';
 import { BRAND_CONFIG } from '@/config/brand';
+import { fetchProductsFromApi } from '@/services/api';
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<'all' | 'own_design' | 'resold'>('all');
+  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
 
-  const filteredProducts = INITIAL_PRODUCTS.filter((p) => {
+  // Fetch original data from backend DB with fallback to INITIAL_PRODUCTS
+  useEffect(() => {
+    fetchProductsFromApi()
+      .then((data) => {
+        if (data && data.length > 0) {
+          setProducts(data);
+        } else {
+          setProducts(INITIAL_PRODUCTS);
+        }
+      })
+      .catch(() => {
+        setProducts(INITIAL_PRODUCTS);
+      });
+  }, []);
+
+  const filteredProducts = products.filter((p) => {
     if (activeTab === 'all') return true;
     return p.productType === activeTab;
   });
@@ -61,31 +79,31 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-[#FAF8F5] border-b border-[#E8E2D8] py-12 md:py-20 lg:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      {/* Hero Section - Responsive Full-Viewport Immersion */}
+      <section className="relative overflow-hidden bg-[#FAF8F5] border-b border-[#E8E2D8] min-h-[calc(100vh-112px)] flex items-center py-10 lg:py-16">
+        <div className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 xl:gap-20 items-center">
             {/* Left Hero Text */}
-            <div className="lg:col-span-7 space-y-6">
-              <div className="inline-flex items-center space-x-2 bg-[#FBF7EE] border border-[#E8DFC9] text-[#1A3B2B] px-3.5 py-1.5 rounded-full text-xs font-semibold shadow-xs">
-                <Scissors className="w-3.5 h-3.5 text-[#C29B38]" />
+            <div className="lg:col-span-7 space-y-6 lg:space-y-8">
+              <div className="inline-flex items-center space-x-2 bg-[#FBF7EE] border border-[#E8DFC9] text-[#1A3B2B] px-4 py-2 rounded-full text-xs sm:text-sm font-semibold shadow-xs">
+                <Scissors className="w-4 h-4 text-[#C29B38]" />
                 <span>Handpicked Fabrics • Styled into Signature Women&apos;s Outfits</span>
               </div>
 
-              <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-[#1A3B2B] leading-[1.15] tracking-tight">
+              <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-[4.25rem] 2xl:text-[4.75rem] font-bold text-[#1A3B2B] leading-[1.12] tracking-tight">
                 Curated Fabrics. <br />
                 <span className="italic font-normal text-[#C29B38]">Styled for You</span>, Tailored with Precision.
               </h1>
 
-              <p className="text-sm sm:text-base text-[#5F6762] max-w-xl leading-relaxed">
+              <p className="text-sm sm:text-base lg:text-lg text-[#5F6762] max-w-2xl leading-relaxed">
                 We source pure loom cottons and fine linen fabrics, then design and tailor them into flattering women&apos;s dresses, unstitched suit materials, and contemporary co-ord sets. Pure comfort, direct craft value, and verified authenticity.
               </p>
 
               {/* CTAs */}
-              <div className="flex flex-wrap items-center gap-3.5 pt-2">
+              <div className="flex flex-wrap items-center gap-4 pt-2">
                 <Link
                   href="/shop?type=own_design"
-                  className="bg-[#1A3B2B] hover:bg-[#2A5A43] text-white text-xs sm:text-sm font-bold px-6 py-3.5 rounded-xl flex items-center space-x-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                  className="bg-[#1A3B2B] hover:bg-[#2A5A43] text-white text-xs sm:text-sm lg:text-base font-bold px-7 py-4 rounded-xl flex items-center space-x-2.5 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
                 >
                   <Sparkles className="w-4 h-4 text-[#C29B38]" />
                   <span>Shop Our In-House Designs</span>
@@ -93,7 +111,7 @@ export default function HomePage() {
 
                 <Link
                   href="/shop"
-                  className="bg-white hover:bg-[#F2ECE1] text-[#1C201D] border border-[#D8D2C5] text-xs sm:text-sm font-semibold px-6 py-3.5 rounded-xl flex items-center space-x-2 transition-all shadow-xs"
+                  className="bg-white hover:bg-[#F2ECE1] text-[#1C201D] border border-[#D8D2C5] text-xs sm:text-sm lg:text-base font-semibold px-7 py-4 rounded-xl flex items-center space-x-2.5 transition-all shadow-xs hover:border-[#1A3B2B]"
                 >
                   <span>Explore Women&apos;s Catalog</span>
                   <ArrowRight className="w-4 h-4 text-[#1A3B2B]" />
@@ -101,17 +119,17 @@ export default function HomePage() {
               </div>
 
               {/* Trust Micro-Bullets with Clean SVGs */}
-              <div className="pt-6 grid grid-cols-3 gap-4 border-t border-[#E8E2D8] text-xs text-[#1C201D]">
-                <div className="flex items-center space-x-2">
-                  <Feather className="w-4 h-4 text-[#C29B38]" />
+              <div className="pt-6 lg:pt-8 grid grid-cols-3 gap-4 lg:gap-8 border-t border-[#E8E2D8] text-xs sm:text-sm text-[#1C201D]">
+                <div className="flex items-center space-x-2.5">
+                  <Feather className="w-4 h-4 sm:w-5 sm:h-5 text-[#C29B38] shrink-0" />
                   <span className="font-medium">100% Breathable Cotton</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Scissors className="w-4 h-4 text-[#1A3B2B]" />
+                <div className="flex items-center space-x-2.5">
+                  <Scissors className="w-4 h-4 sm:w-5 sm:h-5 text-[#1A3B2B] shrink-0" />
                   <span className="font-medium">Generous 2.5m Cuts</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <ShieldCheck className="w-4 h-4 text-[#C29B38]" />
+                <div className="flex items-center space-x-2.5">
+                  <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-[#C29B38] shrink-0" />
                   <span className="font-medium">Direct Sourced Value</span>
                 </div>
               </div>
@@ -119,8 +137,8 @@ export default function HomePage() {
 
             {/* Right Hero Visual Collage */}
             <div className="lg:col-span-5 relative">
-              <div className="relative mx-auto max-w-md lg:max-w-none">
-                <div className="aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
+              <div className="relative mx-auto max-w-md sm:max-w-lg lg:max-w-none w-full">
+                <div className="aspect-[4/5] max-h-[580px] lg:max-h-[640px] xl:max-h-[700px] w-full rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-neutral-100">
                   <img
                     src="https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&q=80&w=1200"
                     alt="VL Designs Women's Cotton Dress Collection"
@@ -129,25 +147,25 @@ export default function HomePage() {
                 </div>
 
                 {/* Floating Authentic Badge Card */}
-                <div className="absolute -bottom-6 -left-6 bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-xl border border-[#E8E2D8] max-w-xs animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="absolute -bottom-5 -left-4 sm:-bottom-6 sm:-left-6 bg-white/95 backdrop-blur-md rounded-2xl p-4 sm:p-5 shadow-xl border border-[#E8E2D8] max-w-xs animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full bg-[#1A3B2B] text-[#C29B38] flex items-center justify-center font-bold">
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#1A3B2B] text-[#C29B38] flex items-center justify-center font-bold shrink-0">
                       <Scissors className="w-5 h-5 text-[#C29B38]" />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-[#1C201D]">VL Studio Tailoring</p>
-                      <p className="text-[11px] text-[#5F6762]">Pure Fabric • Bespoke Cuts</p>
+                      <p className="text-xs sm:text-sm font-bold text-[#1C201D]">VL Studio Tailoring</p>
+                      <p className="text-[11px] sm:text-xs text-[#5F6762]">Pure Fabric • Bespoke Cuts</p>
                     </div>
                   </div>
-                  <div className="mt-2.5 pt-2 border-t border-neutral-100 flex items-center justify-between text-xs">
+                  <div className="mt-3 pt-2.5 border-t border-neutral-100 flex items-center justify-between text-xs sm:text-sm">
                     <span className="text-[#1A3B2B] font-bold">From ₹1,150</span>
-                    <span className="text-[#1E6B35] font-semibold text-[11px]">Free Shipping &gt; ₹{BRAND_CONFIG.freeShippingThreshold}</span>
+                    <span className="text-[#1E6B35] font-semibold text-[11px] sm:text-xs">Free Shipping &gt; ₹{BRAND_CONFIG.freeShippingThreshold}</span>
                   </div>
                 </div>
 
                 {/* Floating Guarantee Badge */}
-                <div className="absolute -top-4 -right-4 bg-[#1A3B2B] text-white rounded-2xl px-3.5 py-2 shadow-lg border border-[#2A5A43] flex items-center space-x-2 text-xs">
-                  <span className="w-2 h-2 rounded-full bg-[#C29B38] animate-ping"></span>
+                <div className="absolute -top-4 -right-3 sm:-top-5 sm:-right-5 bg-[#1A3B2B] text-white rounded-2xl px-4 py-2.5 shadow-lg border border-[#2A5A43] flex items-center space-x-2 text-xs sm:text-sm">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#C29B38] animate-ping"></span>
                   <span className="font-semibold">Women&apos;s Exclusive</span>
                 </div>
               </div>
@@ -157,20 +175,20 @@ export default function HomePage() {
       </section>
 
       {/* Category Grid Section */}
-      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="text-xs font-bold tracking-widest uppercase text-[#C29B38]">
+      <section className="py-16 lg:py-24 w-full max-w-[1680px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
+        <div className="text-center max-w-3xl mx-auto mb-12 lg:mb-16">
+          <span className="text-xs sm:text-sm font-bold tracking-widest uppercase text-[#C29B38]">
             Curated Categories
           </span>
-          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#1A3B2B] mt-1">
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1A3B2B] mt-2">
             Shop Women&apos;s Silhouettes &amp; Fabrics
           </h2>
-          <p className="text-xs sm:text-sm text-[#5F6762] mt-2">
+          <p className="text-xs sm:text-sm lg:text-base text-[#5F6762] mt-3">
             Every piece is created for daily breathability, skin-friendly softness, and timeless grace.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           {categories.map((cat) => (
             <Link
               key={cat.title}
@@ -208,26 +226,26 @@ export default function HomePage() {
       </section>
 
       {/* Featured Drops with Distinction Switcher */}
-      <section className="py-16 bg-[#FBF7EE] border-y border-[#E8DFC9]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+      <section className="py-16 lg:py-24 bg-[#FBF7EE] border-y border-[#E8DFC9]">
+        <div className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 lg:mb-14 gap-6">
             <div>
-              <span className="text-xs font-bold tracking-widest uppercase text-[#C29B38]">
+              <span className="text-xs sm:text-sm font-bold tracking-widest uppercase text-[#C29B38]">
                 Authentic Catalog
               </span>
-              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#1A3B2B] mt-1">
+              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1A3B2B] mt-2">
                 Explore Featured Drops
               </h2>
-              <p className="text-xs sm:text-sm text-[#5F6762] mt-1">
+              <p className="text-xs sm:text-sm lg:text-base text-[#5F6762] mt-2">
                 Filter between our custom designed dresses and curated regional trends.
               </p>
             </div>
 
             {/* Interactive Tab Switcher */}
-            <div className="flex bg-white p-1 rounded-xl border border-[#D8D2C5] shadow-xs">
+            <div className="flex bg-white p-1.5 rounded-2xl border border-[#D8D2C5] shadow-xs">
               <button
                 onClick={() => setActiveTab('all')}
-                className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+                className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                   activeTab === 'all'
                     ? 'bg-[#1A3B2B] text-white shadow-sm'
                     : 'text-[#5F6762] hover:text-[#1C201D]'
@@ -237,41 +255,41 @@ export default function HomePage() {
               </button>
               <button
                 onClick={() => setActiveTab('own_design')}
-                className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center space-x-1.5 ${
+                className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center space-x-1.5 ${
                   activeTab === 'own_design'
                     ? 'bg-[#1A3B2B] text-white shadow-sm'
                     : 'text-[#1A3B2B] hover:text-[#C29B38]'
                 }`}
               >
-                <Scissors className="w-3.5 h-3.5 text-[#C29B38]" />
+                <Scissors className="w-4 h-4 text-[#C29B38]" />
                 <span>Our In-House Designs</span>
               </button>
               <button
                 onClick={() => setActiveTab('resold')}
-                className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center space-x-1.5 ${
+                className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center space-x-1.5 ${
                   activeTab === 'resold'
                     ? 'bg-[#1A3B2B] text-white shadow-sm'
                     : 'text-[#5F6762] hover:text-[#1C201D]'
                 }`}
               >
-                <Layers className="w-3.5 h-3.5" />
+                <Layers className="w-4 h-4" />
                 <span>Curated Trends</span>
               </button>
             </div>
           </div>
 
           {/* Products Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
             {filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
 
           {/* View All Button */}
-          <div className="mt-12 text-center">
+          <div className="mt-14 text-center">
             <Link
               href="/shop"
-              className="inline-flex items-center space-x-2 bg-white hover:bg-[#FAF8F5] text-[#1A3B2B] border border-[#1A3B2B] px-8 py-3.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-all shadow-sm hover:shadow-md"
+              className="inline-flex items-center space-x-2 bg-white hover:bg-[#FAF8F5] text-[#1A3B2B] border border-[#1A3B2B] px-9 py-4 rounded-xl text-xs sm:text-sm font-bold tracking-wider uppercase transition-all shadow-sm hover:shadow-md"
             >
               <span>View Complete Shop Catalog</span>
               <ArrowRight className="w-4 h-4" />
@@ -281,36 +299,36 @@ export default function HomePage() {
       </section>
 
       {/* The Direct Website Advantage */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-[#1A3B2B] rounded-3xl p-8 sm:p-12 lg:p-16 text-white relative overflow-hidden">
-          <div className="max-w-2xl relative z-10 space-y-6">
-            <span className="text-xs font-bold tracking-widest uppercase text-[#C29B38] bg-white/10 px-3 py-1 rounded-full border border-white/20">
+      <section className="py-16 lg:py-24 w-full max-w-[1680px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
+        <div className="bg-[#1A3B2B] rounded-3xl p-8 sm:p-12 lg:p-16 xl:p-20 text-white relative overflow-hidden">
+          <div className="max-w-3xl relative z-10 space-y-6 lg:space-y-8">
+            <span className="text-xs font-bold tracking-widest uppercase text-[#C29B38] bg-white/10 px-3.5 py-1.5 rounded-full border border-white/20">
               Direct Website Advantage
             </span>
-            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
+            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight">
               Why Buying On Our Website Is Your Best Choice
             </h2>
-            <p className="text-xs sm:text-sm text-[#D8D2C5] leading-relaxed">
+            <p className="text-xs sm:text-sm lg:text-base text-[#D8D2C5] leading-relaxed">
               No waiting for DM replies. Get immediate order confirmation, live courier tracking, verified fabric measurements, and an instant 5% prepaid discount.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-              <div className="bg-[#132C20] p-4 rounded-xl border border-[#244E39]">
-                <h4 className="text-sm font-bold text-[#E7C875] flex items-center space-x-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 pt-2">
+              <div className="bg-[#132C20] p-5 rounded-2xl border border-[#244E39]">
+                <h4 className="text-sm sm:text-base font-bold text-[#E7C875] flex items-center space-x-2">
                   <Zap className="w-4 h-4" />
                   <span>5% Instant UPI Discount</span>
                 </h4>
-                <p className="text-[11px] text-[#A6B5AD] mt-1">
+                <p className="text-[11px] sm:text-xs text-[#A6B5AD] mt-1.5 leading-relaxed">
                   Pay via Google Pay, PhonePe or Paytm using code <strong>UPI5</strong> at checkout.
                 </p>
               </div>
 
-              <div className="bg-[#132C20] p-4 rounded-xl border border-[#244E39]">
-                <h4 className="text-sm font-bold text-[#E7C875] flex items-center space-x-2">
+              <div className="bg-[#132C20] p-5 rounded-2xl border border-[#244E39]">
+                <h4 className="text-sm sm:text-base font-bold text-[#E7C875] flex items-center space-x-2">
                   <Scissors className="w-4 h-4" />
                   <span>Custom Fabric Cut Guarantee</span>
                 </h4>
-                <p className="text-[11px] text-[#A6B5AD] mt-1">
+                <p className="text-[11px] sm:text-xs text-[#A6B5AD] mt-1.5 leading-relaxed">
                   Generous 2.5m cuts so your tailor can craft any custom style up to 3XL.
                 </p>
               </div>
@@ -319,7 +337,7 @@ export default function HomePage() {
             <div className="pt-2">
               <Link
                 href="/shop"
-                className="inline-flex items-center space-x-2 bg-[#C29B38] hover:bg-[#A9842A] text-white text-xs font-bold px-6 py-3.5 rounded-xl uppercase tracking-wider transition-colors shadow-md"
+                className="inline-flex items-center space-x-2 bg-[#C29B38] hover:bg-[#A9842A] text-white text-xs sm:text-sm font-bold px-7 py-4 rounded-xl uppercase tracking-wider transition-colors shadow-md"
               >
                 <span>Browse Women&apos;s Catalog Now</span>
                 <ArrowRight className="w-4 h-4" />
@@ -330,13 +348,13 @@ export default function HomePage() {
       </section>
 
       {/* Customer Trust Reviews */}
-      <section className="py-16 bg-[#FAF8F5] border-t border-[#E8E2D8]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-xl mx-auto mb-12">
-            <span className="text-xs font-bold tracking-widest uppercase text-[#C29B38]">
+      <section className="py-16 lg:py-24 bg-[#FAF8F5] border-t border-[#E8E2D8]">
+        <div className="w-full max-w-[1680px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
+          <div className="text-center max-w-2xl mx-auto mb-12 lg:mb-16">
+            <span className="text-xs sm:text-sm font-bold tracking-widest uppercase text-[#C29B38]">
               Customer Experiences
             </span>
-            <h2 className="font-serif text-3xl font-bold text-[#1A3B2B] mt-1">
+            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1A3B2B] mt-2">
               Loved by Women Across India
             </h2>
           </div>
