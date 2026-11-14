@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, ProductVariant, CartItem } from '@/types';
+import { BRAND_CONFIG } from '@/config/brand';
 
 interface CartContextType {
   cart: CartItem[];
@@ -15,6 +16,7 @@ interface CartContextType {
   closeCart: () => void;
   subtotal: number;
   freeShippingThreshold: number;
+  codHandlingFee: number;
   freeShippingProgress: number;
   amountNeededForFreeShipping: number;
   discountCode: string;
@@ -124,7 +126,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const subtotal = cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
-  const freeShippingThreshold = 999;
+  const freeShippingThreshold = BRAND_CONFIG.freeShippingThreshold;
+  const codHandlingFee = BRAND_CONFIG.codHandlingFee;
   const amountNeededForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
   const freeShippingProgress = Math.min(100, Math.round((subtotal / freeShippingThreshold) * 100));
 
@@ -133,19 +136,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (clean === 'WELCOME10' || clean === 'FIRST10') {
       setDiscountCode(clean);
       setDiscountPercent(10);
-      return { success: true, message: '🎉 10% First Order Discount Applied!' };
+      return { success: true, message: '10% First Order Discount Applied!' };
     }
     if (clean === 'UPI5' || clean === 'PREPAID5') {
       setDiscountCode(clean);
-      setDiscountPercent(5);
-      return { success: true, message: '⚡ 5% Prepaid Instant Discount Applied!' };
+      setDiscountPercent(BRAND_CONFIG.upiDiscountPercent);
+      return { success: true, message: '5% Instant UPI Discount Applied!' };
     }
     if (clean === 'VL200' && subtotal >= 1999) {
       setDiscountCode(clean);
       setDiscountPercent(12);
-      return { success: true, message: '✨ ₹200 Festive Voucher Applied!' };
+      return { success: true, message: 'Festive Voucher Applied!' };
     }
-    return { success: false, message: 'Invalid or expired coupon code. Try WELCOME10' };
+    return { success: false, message: 'Invalid or expired coupon code. Try WELCOME10 or UPI5' };
   };
 
   const removeDiscount = () => {
@@ -169,6 +172,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         closeCart: () => setIsCartOpen(false),
         subtotal,
         freeShippingThreshold,
+        codHandlingFee,
         freeShippingProgress,
         amountNeededForFreeShipping,
         discountCode,

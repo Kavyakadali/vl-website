@@ -3,14 +3,46 @@ import { Product } from '@/types';
 export const INITIAL_PRODUCTS: Product[] = [
   {
     id: 'prod-01',
+    title: 'VL Floral Tiered Pure Cotton Maxi Dress',
+    slug: 'vl-floral-tiered-pure-cotton-maxi-dress',
+    description: 'Designed in-house by VL Studio. We source breathable 100% combed cotton fabric from regional weavers and craft this flattering flared tiered maxi dress with puff sleeves, empire waist, and pockets.',
+    price: 1499,
+    mrp: 2499,
+    category: 'Kurtis & Sets',
+    productType: 'own_design',
+    badge: 'VL Designed Dress',
+    rating: 4.9,
+    reviewCount: 42,
+    featured: true,
+    fabric: '100% Breathable Combed Cotton',
+    fabricDetails: {
+      material: '100% Pure Natural Cotton (60s count)',
+      weave: 'Floral Screenprint on Fine Weave',
+      care: 'Gentle hand wash cold or gentle machine wash.',
+      transparency: 'Opaque with soft cotton lining included',
+    },
+    images: [
+      'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&q=80&w=1000',
+      'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&q=80&w=1000',
+      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&q=80&w=1000'
+    ],
+    variants: [
+      { id: 'v1-1', size: 'S (Bust 36")', color: 'Sage Botanical Print', colorHex: '#7C8C74', stock: 5 },
+      { id: 'v1-2', size: 'M (Bust 38")', color: 'Sage Botanical Print', colorHex: '#7C8C74', stock: 8 },
+      { id: 'v1-3', size: 'L (Bust 40")', color: 'Sage Botanical Print', colorHex: '#7C8C74', stock: 6 },
+      { id: 'v1-4', size: 'XL (Bust 42")', color: 'Sage Botanical Print', colorHex: '#7C8C74', stock: 3 },
+    ]
+  },
+  {
+    id: 'prod-02',
     title: 'VL Signature Kalyani Cotton Unstitched Suit Set',
     slug: 'vl-signature-kalyani-cotton-unstitched-suit-set',
-    description: 'Directly designed by VL Designs from premium raw loom cotton. Hand-finished floral buti prints accented with traditional contrast border and an airy Mal Mal dupatta.',
+    description: 'We purchase authentic unbleached Kalyani cotton cloth and design custom block-print motifs with a lightweight Mal Mal dupatta. Ideal for custom tailored salwar suits, straight suits, or Pakistani-style kurtas.',
     price: 1399,
     mrp: 2399,
     category: 'Unstitched Suit Material',
     productType: 'own_design',
-    badge: 'VL Original Design',
+    badge: 'VL Designed Material',
     rating: 4.9,
     reviewCount: 38,
     featured: true,
@@ -30,53 +62,52 @@ export const INITIAL_PRODUCTS: Product[] = [
       'https://images.unsplash.com/photo-1609357605129-26f69add5d6e?auto=format&fit=crop&q=80&w=1000'
     ],
     variants: [
-      { id: 'v1-1', size: 'Unstitched 3-Piece Material', color: 'Royal Indigo Blue', colorHex: '#253B59', stock: 6 },
-      { id: 'v1-2', size: 'Unstitched 3-Piece Material', color: 'Terracotta Rust', colorHex: '#A34828', stock: 4 },
-      { id: 'v1-3', size: 'Unstitched 3-Piece Material', color: 'Forest Green', colorHex: '#1D3B2B', stock: 3 },
-    ]
-  },
-  {
-    id: 'prod-02',
-    title: 'Artisan Chanderi Silk Cotton Handcrafted Kurta Set',
-    slug: 'artisan-chanderi-silk-cotton-handcrafted-kurta-set',
-    description: 'Designed and stitched in-house by our master karigars. Features delicate zari piping, mother-of-pearl buttons, and a matching cotton silk straight pant.',
-    price: 1899,
-    mrp: 3200,
-    category: 'Kurtis & Sets',
-    productType: 'own_design',
-    badge: 'VL Handcrafted',
-    rating: 4.8,
-    reviewCount: 24,
-    featured: true,
-    fabric: 'Chanderi Silk Cotton Blend',
-    fabricDetails: {
-      material: '70% Cotton, 30% Mulberry Chanderi Silk',
-      weave: 'Artisanal Loom with Zari Border',
-      care: 'Dry clean recommended for first two washes.',
-      transparency: 'Lightweight with soft attached mulmul lining',
-    },
-    images: [
-      'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&q=80&w=1000',
-      'https://images.unsplash.com/photo-1583391733975-0453303c7370?auto=format&fit=crop&q=80&w=1000',
-      'https://images.unsplash.com/photo-1610030469668-93530c17b58f?auto=format&fit=crop&q=80&w=1000'
-    ],
-    variants: [
-      { id: 'v2-1', size: 'S (Bust 36")', color: 'Blush Rose Gold', colorHex: '#D49B92', stock: 4 },
-      { id: 'v2-2', size: 'M (Bust 38")', color: 'Blush Rose Gold', colorHex: '#D49B92', stock: 8 },
-      { id: 'v2-3', size: 'L (Bust 40")', color: 'Blush Rose Gold', colorHex: '#D49B92', stock: 5 },
-      { id: 'v2-4', size: 'XL (Bust 42")', color: 'Blush Rose Gold', colorHex: '#D49B92', stock: 3 },
+      { id: 'v2-1', size: 'Unstitched 3-Piece Material', color: 'Royal Indigo Blue', colorHex: '#253B59', stock: 6 },
+      { id: 'v2-2', size: 'Unstitched 3-Piece Material', color: 'Terracotta Rust', colorHex: '#A34828', stock: 4 },
+      { id: 'v2-3', size: 'Unstitched 3-Piece Material', color: 'Forest Green', colorHex: '#1D3B2B', stock: 3 },
     ]
   },
   {
     id: 'prod-03',
+    title: 'Pure Linen Cotton Women’s Notch Collar Co-Ord Set',
+    slug: 'pure-linen-cotton-womens-notch-collar-co-ord-set',
+    description: 'Bespoke women’s two-piece co-ord set designed by VL Studio from sourced French flax linen-cotton yarn. Features a tailored notched lapel tunic with shell buttons and matching cropped ankle trousers.',
+    price: 1650,
+    mrp: 2799,
+    category: 'Linen Essentials',
+    productType: 'own_design',
+    badge: 'VL Studio Original',
+    rating: 4.8,
+    reviewCount: 29,
+    featured: true,
+    fabric: 'Organic Linen Cotton Blend',
+    fabricDetails: {
+      material: '60% French Flax Linen, 40% South Indian Cotton',
+      weave: 'Breathable Slub Weave',
+      care: 'Machine wash gentle with similar colors. Warm iron when damp.',
+      transparency: 'Opaque luxury density',
+    },
+    images: [
+      'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&q=80&w=1000',
+      'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&q=80&w=1000'
+    ],
+    variants: [
+      { id: 'v3-1', size: 'S (Comfort Fit)', color: 'Sage Green', colorHex: '#879782', stock: 4 },
+      { id: 'v3-2', size: 'M (Comfort Fit)', color: 'Sage Green', colorHex: '#879782', stock: 6 },
+      { id: 'v3-3', size: 'L (Comfort Fit)', color: 'Sage Green', colorHex: '#879782', stock: 5 },
+      { id: 'v3-4', size: 'XL (Comfort Fit)', color: 'Natural Oatmeal', colorHex: '#D8CBB7', stock: 3 },
+    ]
+  },
+  {
+    id: 'prod-04',
     title: 'Traditional Cham Cham Soft Weave Cotton Saree',
     slug: 'traditional-cham-cham-soft-weave-cotton-saree',
-    description: 'A tribute to authentic Tamil Nadu weaving heritage. Ultra-soft Cham Cham cotton weave featuring feather-light drape, temple zari border, and running unstitched blouse piece.',
+    description: 'Sourced directly from authentic Tamil Nadu loom clusters. Ultra-soft Cham Cham cotton weave featuring feather-light drape, temple zari border, and running unstitched blouse piece.',
     price: 1150,
     mrp: 1999,
     category: 'Cotton Sarees',
-    productType: 'own_design',
-    badge: 'Direct From Loom',
+    productType: 'resold',
+    badge: 'Curated Heritage',
     rating: 5.0,
     reviewCount: 47,
     featured: true,
@@ -93,55 +124,24 @@ export const INITIAL_PRODUCTS: Product[] = [
       'https://images.unsplash.com/photo-1609357605129-26f69add5d6e?auto=format&fit=crop&q=80&w=1000'
     ],
     variants: [
-      { id: 'v3-1', size: '6.3 Meters with Blouse', color: 'Mustard Yellow & Maroon', colorHex: '#DDA02A', stock: 7 },
-      { id: 'v3-2', size: '6.3 Meters with Blouse', color: 'Peacock Teal & Pink', colorHex: '#1B6A73', stock: 5 },
-      { id: 'v3-3', size: '6.3 Meters with Blouse', color: 'Ivory Cream & Red', colorHex: '#EFE7D8', stock: 2 }
-    ]
-  },
-  {
-    id: 'prod-04',
-    title: 'Pure Linen Cotton Breathable Daily Co-Ord Set',
-    slug: 'pure-linen-cotton-breathable-daily-co-ord-set',
-    description: 'Custom tailored by VL Studio. Features a comfort-fit notched collar tunic and tapered ankle pants engineered with pure organic linen-cotton yarns for all-day freshness.',
-    price: 1650,
-    mrp: 2799,
-    category: 'Linen Essentials',
-    productType: 'own_design',
-    badge: 'VL Studio Original',
-    rating: 4.9,
-    reviewCount: 19,
-    featured: false,
-    fabric: 'Organic Linen Cotton Blend',
-    fabricDetails: {
-      material: '60% French Flax Linen, 40% South Indian Cotton',
-      weave: 'Breathable Slub Weave',
-      care: 'Machine wash gentle with similar colors. Warm iron when damp.',
-      transparency: 'Opaque luxury density',
-    },
-    images: [
-      'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&q=80&w=1000',
-      'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&q=80&w=1000'
-    ],
-    variants: [
-      { id: 'v4-1', size: 'M (Comfort Fit)', color: 'Sage Green', colorHex: '#879782', stock: 6 },
-      { id: 'v4-2', size: 'L (Comfort Fit)', color: 'Sage Green', colorHex: '#879782', stock: 5 },
-      { id: 'v4-3', size: 'XL (Comfort Fit)', color: 'Sage Green', colorHex: '#879782', stock: 4 },
-      { id: 'v4-4', size: 'M (Comfort Fit)', color: 'Natural Oatmeal', colorHex: '#D8CBB7', stock: 3 },
+      { id: 'v4-1', size: '6.3 Meters with Blouse', color: 'Mustard Yellow & Maroon', colorHex: '#DDA02A', stock: 7 },
+      { id: 'v4-2', size: '6.3 Meters with Blouse', color: 'Peacock Teal & Pink', colorHex: '#1B6A73', stock: 5 },
+      { id: 'v4-3', size: '6.3 Meters with Blouse', color: 'Ivory Cream & Red', colorHex: '#EFE7D8', stock: 2 }
     ]
   },
   {
     id: 'prod-05',
     title: 'Jaipur Floral Block Print Pure Cotton Anarkali Dress',
     slug: 'jaipur-floral-block-print-pure-cotton-anarkali-dress',
-    description: 'Carefully curated from traditional Sanganeri craft partners. 100% natural vegetable dyes, gathered waist, and finished with gota patti detailing.',
+    description: 'Curated women’s festive flared Anarkali dress crafted from natural dyed 60x60 cambric cotton with intricate gota patti border work and tassel neckties.',
     price: 1450,
     mrp: 2499,
     category: 'Kurtis & Sets',
     productType: 'resold',
-    badge: 'Curated Collection',
+    badge: 'Curated Trend',
     rating: 4.7,
     reviewCount: 31,
-    featured: true,
+    featured: false,
     fabric: '100% Cotton 60x60 Cambric',
     fabricDetails: {
       material: '100% Pure Sanganeri Cotton',
@@ -154,17 +154,17 @@ export const INITIAL_PRODUCTS: Product[] = [
       'https://images.unsplash.com/photo-1610030469668-93530c17b58f?auto=format&fit=crop&q=80&w=1000'
     ],
     variants: [
-      { id: 'v5-1', size: 'M', color: 'Crimson Red', colorHex: '#8E2828', stock: 5 },
-      { id: 'v5-2', size: 'L', color: 'Crimson Red', colorHex: '#8E2828', stock: 6 },
-      { id: 'v5-3', size: 'XL', color: 'Crimson Red', colorHex: '#8E2828', stock: 3 },
-      { id: 'v5-4', size: 'XXL', color: 'Crimson Red', colorHex: '#8E2828', stock: 2 }
+      { id: 'v5-1', size: 'S', color: 'Crimson Red', colorHex: '#8E2828', stock: 4 },
+      { id: 'v5-2', size: 'M', color: 'Crimson Red', colorHex: '#8E2828', stock: 5 },
+      { id: 'v5-3', size: 'L', color: 'Crimson Red', colorHex: '#8E2828', stock: 6 },
+      { id: 'v5-4', size: 'XL', color: 'Crimson Red', colorHex: '#8E2828', stock: 3 },
     ]
   },
   {
     id: 'prod-06',
     title: 'Kerala Kasavu Gold Zari Festive Cotton Saree',
     slug: 'kerala-kasavu-gold-zari-festive-cotton-saree',
-    description: 'Curated authentic Kasavu handloom cotton saree with 3-inch woven temple gold zari border and rich pallu. Ideal for festivals, ceremonies, and temple visits.',
+    description: 'Curated authentic South Indian Kasavu handloom cotton saree with 3-inch woven temple gold zari border and rich pallu for weddings and celebrations.',
     price: 1299,
     mrp: 2199,
     category: 'Cotton Sarees',

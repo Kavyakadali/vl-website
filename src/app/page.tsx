@@ -2,9 +2,23 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Sparkles, ArrowRight, ShieldCheck, Feather, Truck, RefreshCw, Star, Layers, Scissors } from 'lucide-react';
+import {
+  Sparkles,
+  ArrowRight,
+  ShieldCheck,
+  Feather,
+  Truck,
+  RotateCcw,
+  Star,
+  Scissors,
+  Layers,
+  Zap,
+  CheckCircle2,
+  Heart
+} from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 import { INITIAL_PRODUCTS } from '@/data/products';
+import { BRAND_CONFIG } from '@/config/brand';
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<'all' | 'own_design' | 'resold'>('all');
@@ -16,32 +30,32 @@ export default function HomePage() {
 
   const categories = [
     {
-      title: 'Unstitched Suit Material',
-      subtitle: '3-Piece Cotton Sets with Mal Mal Dupatta',
+      title: "Women's Dresses & Co-Ords",
+      subtitle: 'Tailored from Breathable Handpicked Cottons',
+      slug: 'Kurtis+%26+Sets',
+      image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&q=80&w=800',
+      tag: 'VL Designed',
+    },
+    {
+      title: 'Unstitched Suit Materials',
+      subtitle: '3-Piece Cotton Sets with Pure Mal Mal Dupatta',
       slug: 'Unstitched+Suit+Material',
       image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=800',
-      tag: 'Most Popular',
+      tag: 'Best Seller',
     },
     {
       title: 'Traditional Cotton Sarees',
       subtitle: 'Kalyani, Cham Cham & Kasavu Zari Weaves',
       slug: 'Cotton+Sarees',
       image: 'https://images.unsplash.com/photo-1609357605129-26f69add5d6e?auto=format&fit=crop&q=80&w=800',
-      tag: 'Pure Handloom',
+      tag: 'Pure Cotton',
     },
     {
-      title: 'Kurtis & Co-ord Sets',
-      subtitle: 'Artisan Tailored Everyday Elegance',
-      slug: 'Kurtis+%26+Sets',
-      image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&q=80&w=800',
-      tag: 'Handcrafted',
-    },
-    {
-      title: 'Linen Essentials',
-      subtitle: 'Breathable Organic Flax Blends',
+      title: 'Linen Women’s Essentials',
+      subtitle: 'Relaxed Fit Two-Piece Outfits & Tunics',
       slug: 'Linen+Essentials',
       image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&q=80&w=800',
-      tag: 'All-Day Comfort',
+      tag: 'All-Day Wear',
     },
   ];
 
@@ -53,25 +67,25 @@ export default function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Left Hero Text */}
             <div className="lg:col-span-7 space-y-6">
-              <div className="inline-flex items-center space-x-2 bg-[#FBF7EE] border border-[#E8DFC9] text-[#1A3B2B] px-3.5 py-1.5 rounded-full text-xs font-semibold">
-                <Sparkles className="w-4 h-4 text-[#C29B38]" />
-                <span>Handcrafted Loom Cottons • Direct from Designer</span>
+              <div className="inline-flex items-center space-x-2 bg-[#FBF7EE] border border-[#E8DFC9] text-[#1A3B2B] px-3.5 py-1.5 rounded-full text-xs font-semibold shadow-xs">
+                <Scissors className="w-3.5 h-3.5 text-[#C29B38]" />
+                <span>Handpicked Fabrics • Styled into Signature Women&apos;s Outfits</span>
               </div>
 
               <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-[#1A3B2B] leading-[1.15] tracking-tight">
-                Pure Weaves. <br />
-                <span className="italic font-normal text-[#C29B38]">Crafted for You</span>, Directly from the Loom.
+                Curated Fabrics. <br />
+                <span className="italic font-normal text-[#C29B38]">Styled for You</span>, Tailored with Precision.
               </h1>
 
               <p className="text-sm sm:text-base text-[#5F6762] max-w-xl leading-relaxed">
-                Experience authentic South Indian Kalyani cottons, breathable unstitched suit materials, and curated ethnic wear. Handpicked fabrics, bespoke master tailoring, and direct craft pricing without retail markups.
+                We source pure loom cottons and fine linen fabrics, then design and tailor them into flattering women&apos;s dresses, unstitched suit materials, and contemporary co-ord sets. Pure comfort, direct craft value, and verified authenticity.
               </p>
 
               {/* CTAs */}
               <div className="flex flex-wrap items-center gap-3.5 pt-2">
                 <Link
                   href="/shop?type=own_design"
-                  className="bg-[#1A3B2B] hover:bg-[#2A5A43] text-white text-xs sm:text-sm font-bold px-6 py-3.5 rounded-xl flex items-center space-x-2 shadow-lg transition-all"
+                  className="bg-[#1A3B2B] hover:bg-[#2A5A43] text-white text-xs sm:text-sm font-bold px-6 py-3.5 rounded-xl flex items-center space-x-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
                 >
                   <Sparkles className="w-4 h-4 text-[#C29B38]" />
                   <span>Shop Our In-House Designs</span>
@@ -79,26 +93,26 @@ export default function HomePage() {
 
                 <Link
                   href="/shop"
-                  className="bg-white hover:bg-[#F2ECE1] text-[#1C201D] border border-[#D8D2C5] text-xs sm:text-sm font-semibold px-6 py-3.5 rounded-xl flex items-center space-x-2 transition-all"
+                  className="bg-white hover:bg-[#F2ECE1] text-[#1C201D] border border-[#D8D2C5] text-xs sm:text-sm font-semibold px-6 py-3.5 rounded-xl flex items-center space-x-2 transition-all shadow-xs"
                 >
-                  <span>Explore All Collections</span>
+                  <span>Explore Women&apos;s Catalog</span>
                   <ArrowRight className="w-4 h-4 text-[#1A3B2B]" />
                 </Link>
               </div>
 
-              {/* Trust Micro-Bullets */}
+              {/* Trust Micro-Bullets with Clean SVGs */}
               <div className="pt-6 grid grid-cols-3 gap-4 border-t border-[#E8E2D8] text-xs text-[#1C201D]">
                 <div className="flex items-center space-x-2">
                   <Feather className="w-4 h-4 text-[#C29B38]" />
-                  <span className="font-medium">100% Pure Natural Cotton</span>
+                  <span className="font-medium">100% Breathable Cotton</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Scissors className="w-4 h-4 text-[#1A3B2B]" />
-                  <span className="font-medium">Generous 2.5m Fabric Cuts</span>
+                  <span className="font-medium">Generous 2.5m Cuts</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <ShieldCheck className="w-4 h-4 text-[#C29B38]" />
-                  <span className="font-medium">Direct Weave Pricing</span>
+                  <span className="font-medium">Direct Sourced Value</span>
                 </div>
               </div>
             </div>
@@ -106,35 +120,35 @@ export default function HomePage() {
             {/* Right Hero Visual Collage */}
             <div className="lg:col-span-5 relative">
               <div className="relative mx-auto max-w-md lg:max-w-none">
-                <div className="aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
+                <div className="aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
                   <img
-                    src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=1200"
-                    alt="VL Designs In-House Kalyani Cotton Collection"
-                    className="w-full h-full object-cover"
+                    src="https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&q=80&w=1200"
+                    alt="VL Designs Women's Cotton Dress Collection"
+                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                   />
                 </div>
 
                 {/* Floating Authentic Badge Card */}
-                <div className="absolute -bottom-6 -left-6 bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-xl border border-[#E8E2D8] max-w-xs animate-in fade-in slide-in-from-bottom-4">
+                <div className="absolute -bottom-6 -left-6 bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-xl border border-[#E8E2D8] max-w-xs animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 rounded-full bg-[#1A3B2B] text-[#C29B38] flex items-center justify-center font-bold">
-                      <Sparkles className="w-5 h-5" />
+                      <Scissors className="w-5 h-5 text-[#C29B38]" />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-[#1C201D]">VL Studio Original</p>
-                      <p className="text-[11px] text-[#5F6762]">Unstitched 3-Piece Material</p>
+                      <p className="text-xs font-bold text-[#1C201D]">VL Studio Tailoring</p>
+                      <p className="text-[11px] text-[#5F6762]">Pure Fabric • Bespoke Cuts</p>
                     </div>
                   </div>
-                  <div className="mt-2 pt-2 border-t border-neutral-100 flex items-center justify-between text-xs">
+                  <div className="mt-2.5 pt-2 border-t border-neutral-100 flex items-center justify-between text-xs">
                     <span className="text-[#1A3B2B] font-bold">From ₹1,150</span>
-                    <span className="text-[#1E6B35] font-semibold text-[11px]">Free Shipping &gt; ₹999</span>
+                    <span className="text-[#1E6B35] font-semibold text-[11px]">Free Shipping &gt; ₹{BRAND_CONFIG.freeShippingThreshold}</span>
                   </div>
                 </div>
 
                 {/* Floating Guarantee Badge */}
-                <div className="absolute -top-4 -right-4 bg-[#1A3B2B] text-white rounded-xl px-3.5 py-2 shadow-lg border border-[#2A5A43] flex items-center space-x-2 text-xs">
-                  <span className="w-2 h-2 rounded-full bg-[#C29B38]"></span>
-                  <span className="font-semibold">Pure Cotton Guarantee</span>
+                <div className="absolute -top-4 -right-4 bg-[#1A3B2B] text-white rounded-2xl px-3.5 py-2 shadow-lg border border-[#2A5A43] flex items-center space-x-2 text-xs">
+                  <span className="w-2 h-2 rounded-full bg-[#C29B38] animate-ping"></span>
+                  <span className="font-semibold">Women&apos;s Exclusive</span>
                 </div>
               </div>
             </div>
@@ -146,13 +160,13 @@ export default function HomePage() {
       <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-12">
           <span className="text-xs font-bold tracking-widest uppercase text-[#C29B38]">
-            Loom-Curated Categories
+            Curated Categories
           </span>
           <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#1A3B2B] mt-1">
-            Shop by Weave &amp; Silhouettes
+            Shop Women&apos;s Silhouettes &amp; Fabrics
           </h2>
           <p className="text-xs sm:text-sm text-[#5F6762] mt-2">
-            From unstitched daily-wear dress materials to festive pure cotton sarees, each piece is crafted for breathability and elegance.
+            Every piece is created for daily breathability, skin-friendly softness, and timeless grace.
           </p>
         </div>
 
@@ -161,7 +175,7 @@ export default function HomePage() {
             <Link
               key={cat.title}
               href={`/shop?category=${cat.slug}`}
-              className="group relative rounded-2xl overflow-hidden aspect-[3/4] bg-neutral-900 border border-[#E8E2D8] shadow-sm hover:shadow-xl transition-all"
+              className="group relative rounded-2xl overflow-hidden aspect-[3/4] bg-neutral-900 border border-[#E8E2D8] shadow-sm hover:shadow-2xl transition-all duration-300"
             >
               <img
                 src={cat.image}
@@ -170,8 +184,8 @@ export default function HomePage() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               
-              <div className="absolute top-3 right-3">
-                <span className="bg-white/90 text-[#1A3B2B] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider backdrop-blur-xs">
+              <div className="absolute top-3.5 right-3.5">
+                <span className="bg-white/90 text-[#1A3B2B] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider backdrop-blur-xs shadow-xs">
                   {cat.tag}
                 </span>
               </div>
@@ -193,7 +207,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Collection with "Our Design" vs "Curated" Distinction Switcher */}
+      {/* Featured Drops with Distinction Switcher */}
       <section className="py-16 bg-[#FBF7EE] border-y border-[#E8DFC9]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
@@ -202,10 +216,10 @@ export default function HomePage() {
                 Authentic Catalog
               </span>
               <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#1A3B2B] mt-1">
-                Explore Our Featured Drops
+                Explore Featured Drops
               </h2>
               <p className="text-xs sm:text-sm text-[#5F6762] mt-1">
-                Filter between our exclusive in-house crafted designs and handpicked curated trends.
+                Filter between our custom designed dresses and curated regional trends.
               </p>
             </div>
 
@@ -219,7 +233,7 @@ export default function HomePage() {
                     : 'text-[#5F6762] hover:text-[#1C201D]'
                 }`}
               >
-                All Products ({INITIAL_PRODUCTS.length})
+                All Outfits ({INITIAL_PRODUCTS.length})
               </button>
               <button
                 onClick={() => setActiveTab('own_design')}
@@ -229,18 +243,19 @@ export default function HomePage() {
                     : 'text-[#1A3B2B] hover:text-[#C29B38]'
                 }`}
               >
-                <Sparkles className="w-3.5 h-3.5 text-[#C29B38]" />
+                <Scissors className="w-3.5 h-3.5 text-[#C29B38]" />
                 <span>Our In-House Designs</span>
               </button>
               <button
                 onClick={() => setActiveTab('resold')}
-                className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+                className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center space-x-1.5 ${
                   activeTab === 'resold'
                     ? 'bg-[#1A3B2B] text-white shadow-sm'
                     : 'text-[#5F6762] hover:text-[#1C201D]'
                 }`}
               >
-                Curated Resale
+                <Layers className="w-3.5 h-3.5" />
+                <span>Curated Trends</span>
               </button>
             </div>
           </div>
@@ -256,7 +271,7 @@ export default function HomePage() {
           <div className="mt-12 text-center">
             <Link
               href="/shop"
-              className="inline-flex items-center space-x-2 bg-white hover:bg-[#FAF8F5] text-[#1A3B2B] border border-[#1A3B2B] px-8 py-3 rounded-xl text-xs font-bold tracking-wider uppercase transition-all shadow-sm"
+              className="inline-flex items-center space-x-2 bg-white hover:bg-[#FAF8F5] text-[#1A3B2B] border border-[#1A3B2B] px-8 py-3.5 rounded-xl text-xs font-bold tracking-wider uppercase transition-all shadow-sm hover:shadow-md"
             >
               <span>View Complete Shop Catalog</span>
               <ArrowRight className="w-4 h-4" />
@@ -265,24 +280,25 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* The "Buy Directly on Our Website" Value Guarantee */}
+      {/* The Direct Website Advantage */}
       <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-[#1A3B2B] rounded-3xl p-8 sm:p-12 lg:p-16 text-white relative overflow-hidden">
           <div className="max-w-2xl relative z-10 space-y-6">
             <span className="text-xs font-bold tracking-widest uppercase text-[#C29B38] bg-white/10 px-3 py-1 rounded-full border border-white/20">
-              The VL Designs Direct Advantage
+              Direct Website Advantage
             </span>
             <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
-              Why Ordering Directly On Our Website Is Your Best Choice
+              Why Buying On Our Website Is Your Best Choice
             </h2>
             <p className="text-xs sm:text-sm text-[#D8D2C5] leading-relaxed">
-              No middleman platforms, no waiting hours for Instagram DM confirmations. When you order directly through our official website, you receive guaranteed loom freshness, real-time tracking, and exclusive discounts.
+              No waiting for DM replies. Get immediate order confirmation, live courier tracking, verified fabric measurements, and an instant 5% prepaid discount.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <div className="bg-[#132C20] p-4 rounded-xl border border-[#244E39]">
                 <h4 className="text-sm font-bold text-[#E7C875] flex items-center space-x-2">
-                  <span>⚡ Extra 5% Instant UPI Discount</span>
+                  <Zap className="w-4 h-4" />
+                  <span>5% Instant UPI Discount</span>
                 </h4>
                 <p className="text-[11px] text-[#A6B5AD] mt-1">
                   Pay via Google Pay, PhonePe or Paytm using code <strong>UPI5</strong> at checkout.
@@ -291,10 +307,11 @@ export default function HomePage() {
 
               <div className="bg-[#132C20] p-4 rounded-xl border border-[#244E39]">
                 <h4 className="text-sm font-bold text-[#E7C875] flex items-center space-x-2">
-                  <span>📦 Full 2.5m Fabric Guarantee</span>
+                  <Scissors className="w-4 h-4" />
+                  <span>Custom Fabric Cut Guarantee</span>
                 </h4>
                 <p className="text-[11px] text-[#A6B5AD] mt-1">
-                  Generous measurements to stitch custom patterns up to 3XL without shortage.
+                  Generous 2.5m cuts so your tailor can craft any custom style up to 3XL.
                 </p>
               </div>
             </div>
@@ -304,7 +321,7 @@ export default function HomePage() {
                 href="/shop"
                 className="inline-flex items-center space-x-2 bg-[#C29B38] hover:bg-[#A9842A] text-white text-xs font-bold px-6 py-3.5 rounded-xl uppercase tracking-wider transition-colors shadow-md"
               >
-                <span>Browse Cotton Collections Now</span>
+                <span>Browse Women&apos;s Catalog Now</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -312,15 +329,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Customer Trust Testimonials */}
+      {/* Customer Trust Reviews */}
       <section className="py-16 bg-[#FAF8F5] border-t border-[#E8E2D8]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-xl mx-auto mb-12">
             <span className="text-xs font-bold tracking-widest uppercase text-[#C29B38]">
-              Customer Reviews
+              Customer Experiences
             </span>
             <h2 className="font-serif text-3xl font-bold text-[#1A3B2B] mt-1">
-              Loved by Cotton Connoisseurs Across India
+              Loved by Women Across India
             </h2>
           </div>
 
@@ -332,7 +349,7 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-xs text-[#1C201D] leading-relaxed italic">
-                &quot;The Kalyani cotton suit material is outstanding! The fabric feels breathable even in 38-degree heat, and the top length was more than enough for my tailor to design a Pakistani-style long kurti.&quot;
+                &quot;The floral tiered cotton dress fits like a dream! You can feel that the material is pure combed cotton and not synthetic polyester. Very breathable for daytime outings.&quot;
               </p>
               <div className="mt-4 pt-3 border-t border-neutral-100 flex items-center justify-between">
                 <div>
@@ -352,7 +369,7 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-xs text-[#1C201D] leading-relaxed italic">
-                &quot;I used to buy from Reenatex and local Elampillai weavers, but VL Designs has the cleanest stitching and fastest delivery. The UPI 5% discount works instantly and I received tracking on WhatsApp immediately.&quot;
+                &quot;The Kalyani cotton suit material was stitched into a straight cut kurti with cigarette pants by my boutique. The fabric didn&apos;t shrink after washing and colors remained crisp.&quot;
               </p>
               <div className="mt-4 pt-3 border-t border-neutral-100 flex items-center justify-between">
                 <div>
@@ -372,7 +389,7 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-xs text-[#1C201D] leading-relaxed italic">
-                &quot;The Cham Cham cotton saree is feather-light and easy to pleat. Genuine South Indian weaving craftsmanship. Will definitely order again for festive gifting!&quot;
+                &quot;The linen co-ord set is my favorite office wear outfit now. Excellent craftsmanship and the instant UPI discount made it very affordable compared to retail malls.&quot;
               </p>
               <div className="mt-4 pt-3 border-t border-neutral-100 flex items-center justify-between">
                 <div>

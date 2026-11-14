@@ -16,10 +16,13 @@ import {
   Share2,
   Info,
   Clock,
-  Scissors
+  Scissors,
+  Zap,
+  MessageCircle
 } from 'lucide-react';
 import { INITIAL_PRODUCTS } from '@/data/products';
 import { useCart } from '@/context/CartContext';
+import { BRAND_CONFIG } from '@/config/brand';
 import PincodeChecker from '@/components/PincodeChecker';
 import ProductCard from '@/components/ProductCard';
 
@@ -203,8 +206,9 @@ export default function ProductDetailPage() {
               </div>
 
               <div className="text-right">
-                <span className="inline-block bg-[#EBF7EE] text-[#1E6B35] text-[11px] font-bold px-2.5 py-1 rounded-full border border-[#BBE3C4]">
-                  ⚡ 5% UPI OFF with &quot;UPI5&quot;
+                <span className="inline-flex items-center space-x-1 bg-[#EBF7EE] text-[#1E6B35] text-[11px] font-bold px-2.5 py-1 rounded-full border border-[#BBE3C4]">
+                  <Zap className="w-3 h-3 text-emerald-600" />
+                  <span>5% UPI Off with &quot;UPI5&quot;</span>
                 </span>
               </div>
             </div>
@@ -213,7 +217,7 @@ export default function ProductDetailPage() {
             {selectedVariant.stock <= 5 && (
               <div className="bg-[#FFF4E5] border border-[#FFD8A8] text-[#D9480F] text-xs font-semibold p-3 rounded-xl flex items-center space-x-2">
                 <Clock className="w-4 h-4 shrink-0" />
-                <span>Hurry! Only {selectedVariant.stock} sets left in this loom batch.</span>
+                <span>Hurry! Only {selectedVariant.stock} sets left in this batch.</span>
               </div>
             )}
 
@@ -258,21 +262,22 @@ export default function ProductDetailPage() {
 
                 <button
                   onClick={handleBuyNow}
-                  className="w-full bg-[#1A3B2B] hover:bg-[#2A5A43] text-white font-bold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center space-x-2 transition-all shadow-lg"
+                  className="w-full bg-[#1A3B2B] hover:bg-[#2A5A43] text-white font-bold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center space-x-2 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
                 >
                   <Sparkles className="w-4 h-4 text-[#C29B38]" />
                   <span>Buy It Now</span>
                 </button>
               </div>
 
-              {/* Direct WhatsApp Inquiry Backup (Keeps transaction intent clear) */}
+              {/* Direct WhatsApp Inquiry Backup (Using BRAND_CONFIG) */}
               <a
-                href={`https://wa.me/919876543210?text=Hi%20VL%20Designs,%20I%20am%20looking%20at%20${encodeURIComponent(product.title)}%20(₹${product.price})%20on%20your%20website.`}
+                href={`https://wa.me/${BRAND_CONFIG.whatsappNumber}?text=Hi%20VL%20Designs,%20I%20am%20looking%20at%20${encodeURIComponent(product.title)}%20(₹${product.price})%20on%20your%20website.`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full text-center block text-[11px] text-[#5F6762] hover:text-[#1A3B2B] py-1"
+                className="w-full text-center flex items-center justify-center space-x-1.5 text-xs text-[#5F6762] hover:text-[#1A3B2B] py-1 transition-colors"
               >
-                Questions about fabric cut or stitching? <u>Ask us on WhatsApp</u>
+                <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />
+                <span>Questions about fabric cut or sizing? <u>Ask directly on WhatsApp</u></span>
               </a>
             </div>
 

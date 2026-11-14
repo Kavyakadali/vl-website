@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { CheckCircle2, Package, Truck, MessageCircle, ArrowRight, Printer, MapPin, Calendar } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { BRAND_CONFIG } from '@/config/brand';
 
 export default function OrderSuccessPage() {
   const params = useParams();
@@ -134,7 +135,7 @@ export default function OrderSuccessPage() {
               </div>
 
               <a
-                href={`https://wa.me/919876543210?text=Hello%20VL%20Designs,%20I%20just%20placed%20order%20${orderId}%20on%20the%20website.%20Please%20share%20tracking%20updates!`}
+                href={`https://wa.me/${BRAND_CONFIG.whatsappNumber}?text=Hello%20VL%20Designs,%20I%20just%20placed%20order%20${orderId}%20on%20the%20website.%20Please%20share%20tracking%20updates!`}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center space-x-2 bg-[#25D366] text-white text-xs font-bold px-5 py-2.5 rounded-full hover:bg-[#1EBE5D] transition-colors shrink-0 shadow-sm"
