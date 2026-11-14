@@ -10,13 +10,14 @@ import {
   Lock,
   ArrowLeft,
   CheckCircle2,
+  Clock,
   Info,
   Sparkles,
-  Zap,
-  HelpCircle
+  HelpCircle,
+  MessageCircle,
+  AlertCircle
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
-import RazorpayModal from '@/components/RazorpayModal';
 import { BRAND_CONFIG } from '@/config/brand';
 
 export default function CheckoutPage() {
@@ -41,21 +42,16 @@ export default function CheckoutPage() {
     pincode: '',
   });
 
-  const [paymentMethod, setPaymentMethod] = useState<'upi_razorpay' | 'cod'>('upi_razorpay');
-  const [isRazorpayOpen, setIsRazorpayOpen] = useState(false);
+  // Default and only active instant payment method is Cash on Delivery
+  const [paymentMethod, setPaymentMethod] = useState<'cod'>('cod');
+  const [showUpiNotice, setShowUpiNotice] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const shippingFee = subtotal >= freeShippingThreshold || subtotal === 0 ? 0 : BRAND_CONFIG.standardShippingFee;
   
-  // COD extra handling fee is ₹45 when choosing Cash on Delivery
-  const codFee = paymentMethod === 'cod' ? BRAND_CONFIG.codHandlingFee : 0;
-  
-  // Extra 5% instant discount when choosing UPI
-  const upiPrepaidDiscount = paymentMethod === 'upi_razorpay' 
-    ? Math.round(subtotal * (BRAND_CONFIG.upiDiscountPercent / 100)) 
-    : 0;
-
-  const finalPayable = Math.max(0, subtotal - discountAmount - upiPrepaidDiscount + shippingFee + codFee);
+  // Cash on Delivery Handling Fee is ₹45
+  const codFee = BRAND_CONFIG.codHandlingFee;
+  const finalPayable = Math.max(0, subtotal - discountAmount + shippingFee + codFee);
 
   // Auto-detect city/state from 6-digit Pincode
   const handlePincodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,14 +90,7 @@ export default function CheckoutPage() {
     e.preventDefault();
     if (!validateForm()) return;
 
-    if (paymentMethod === 'upi_razorpay') {
-      setIsRazorpayOpen(true);
-    } else {
-      completeOrderPlacement('COD_PAYMENT_PENDING');
-    }
-  };
-
-  const completeOrderPlacement = (paymentId: string) => {
+    // Real COD Order Placement - 100% Genuine, No Fake Status
     const orderId = `VL-${Math.floor(100000 + Math.random() * 900000)}`;
     
     const newOrder = {
@@ -110,15 +99,14 @@ export default function CheckoutPage() {
       items: cart,
       shippingAddress: formData,
       subtotal,
-      discount: discountAmount + upiPrepaidDiscount,
+      discount: discountAmount,
       shippingFee,
       codFee,
       total: finalPayable,
-      paymentMethod,
-      paymentStatus: paymentMethod === 'upi_razorpay' ? 'paid' : 'pending',
+      paymentMethod: 'cod',
+      paymentStatus: 'pending', // Transparent real status: Payment pending on delivery
       orderStatus: 'Confirmed',
       createdAt: new Date().toISOString(),
-      paymentId,
     };
 
     try {
@@ -140,7 +128,7 @@ export default function CheckoutPage() {
         <div className="max-w-md mx-auto bg-white p-8 rounded-2xl border border-[#E8E2D8] shadow-sm space-y-4">
           <p className="text-lg font-bold text-[#1C201D]">Your shopping bag is empty</p>
           <p className="text-xs text-[#5F6762]">
-            Please add your desired pieces to the bag before proceeding to checkout.
+            Please add your desired women&apos;s pieces to the bag before proceeding to checkout.
           </p>
           <Link
             href="/shop"
@@ -224,7 +212,7 @@ export default function CheckoutPage() {
 
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-[#1C201D] mb-1">
-                    Email Address (Optional, for digital receipt)
+                    Email Address (Optional)
                   </label>
                   <input
                     type="email"
@@ -298,68 +286,24 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Step 3: Payment Method Selection (ONLY UPI OR COD) */}
+            {/* Step 3: Transparent Payment Options */}
             <div className="bg-white p-6 rounded-2xl border border-[#E8E2D8] shadow-xs space-y-4">
               <h3 className="text-xs font-bold text-[#1C201D] uppercase tracking-wider flex items-center space-x-2">
                 <span className="w-5 h-5 rounded-full bg-[#1A3B2B] text-white text-[11px] flex items-center justify-center font-bold">3</span>
-                <span>Select Payment Method (UPI or COD Only)</span>
+                <span>Payment Options</span>
               </h3>
 
               <div className="space-y-3">
-                {/* Method 1: UPI Direct (with 5% discount, ₹0 COD fee) */}
-                <label
-                  onClick={() => setPaymentMethod('upi_razorpay')}
-                  className={`block p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                    paymentMethod === 'upi_razorpay'
-                      ? 'border-[#1A3B2B] bg-[#FAF8F5] shadow-xs'
-                      : 'border-[#E8E2D8] hover:border-[#D8D2C5]'
-                  }`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-3">
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        checked={paymentMethod === 'upi_razorpay'}
-                        onChange={() => setPaymentMethod('upi_razorpay')}
-                        className="accent-[#1A3B2B]"
-                      />
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <Smartphone className="w-4 h-4 text-emerald-700" />
-                          <span className="text-xs font-bold text-[#1C201D]">
-                            UPI Direct (Google Pay / PhonePe / Paytm / BHIM / QR)
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-[#5F6762] mt-0.5">
-                          Instant online payment • No COD handling fee • 100% verified
-                        </p>
-                      </div>
-                    </div>
-                    <span className="bg-[#EBF7EE] text-[#1E6B35] text-[10px] font-bold px-2.5 py-1 rounded-full border border-[#BBE3C4] flex items-center space-x-1 shrink-0">
-                      <Zap className="w-3 h-3" />
-                      <span>Save 5% Extra</span>
-                    </span>
-                  </div>
-                </label>
-
-                {/* Method 2: Cash on Delivery (COD) with +₹45 handling fee */}
-                <label
-                  onClick={() => setPaymentMethod('cod')}
-                  className={`block p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                    paymentMethod === 'cod'
-                      ? 'border-[#1A3B2B] bg-[#FAF8F5] shadow-xs'
-                      : 'border-[#E8E2D8] hover:border-[#D8D2C5]'
-                  }`}
-                >
+                {/* Method 1: Cash on Delivery (ACTIVE & WORKING) */}
+                <label className="block p-4 rounded-2xl border-2 border-[#1A3B2B] bg-[#FAF8F5] shadow-xs cursor-pointer">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center space-x-3">
                       <input
                         type="radio"
                         name="paymentMethod"
                         checked={paymentMethod === 'cod'}
-                        onChange={() => setPaymentMethod('cod')}
-                        className="accent-[#1A3B2B]"
+                        readOnly
+                        className="accent-[#1A3B2B] w-4 h-4"
                       />
                       <div>
                         <div className="flex items-center space-x-2">
@@ -367,9 +311,12 @@ export default function CheckoutPage() {
                           <span className="text-xs font-bold text-[#1C201D]">
                             Cash on Delivery (COD)
                           </span>
+                          <span className="bg-[#EBF7EE] text-[#1E6B35] text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#BBE3C4]">
+                            Active
+                          </span>
                         </div>
                         <p className="text-[11px] text-[#5F6762] mt-0.5">
-                          Pay cash or scan QR when courier arrives (+₹{BRAND_CONFIG.codHandlingFee} courier handling fee)
+                          Pay cash or scan courier QR on doorstep arrival (+₹{BRAND_CONFIG.codHandlingFee} handling fee)
                         </p>
                       </div>
                     </div>
@@ -378,15 +325,53 @@ export default function CheckoutPage() {
                     </span>
                   </div>
                 </label>
+
+                {/* Method 2: Online UPI (HONEST COMING SOON STATUS) */}
+                <div
+                  onClick={() => setShowUpiNotice(true)}
+                  className="p-4 rounded-2xl border-2 border-neutral-200 bg-neutral-50/70 cursor-pointer hover:border-neutral-300 transition-all opacity-85"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="radio"
+                        disabled
+                        className="opacity-50 cursor-not-allowed"
+                      />
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <Smartphone className="w-4 h-4 text-neutral-400" />
+                          <span className="text-xs font-semibold text-neutral-600">
+                            Instant Online UPI (Google Pay / PhonePe / QR)
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-neutral-400 mt-0.5">
+                          Automated online gateway is in KYC activation. Tap for manual UPI details.
+                        </p>
+                      </div>
+                    </div>
+                    <span className="bg-neutral-200 text-neutral-700 text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0">
+                      Coming Soon
+                    </span>
+                  </div>
+                </div>
+
+                {/* Info Box on How to pay UPI right now */}
+                <div className="bg-[#FBF7EE] border border-[#E8DFC9] rounded-xl p-3.5 flex items-start space-x-2.5 text-xs text-[#7A6B42]">
+                  <Info className="w-4 h-4 shrink-0 mt-0.5 text-[#C29B38]" />
+                  <p className="leading-relaxed text-[11px]">
+                    <strong>Want to pay via UPI right now?</strong> Place your order using Cash on Delivery, then click <em>&apos;Chat on WhatsApp&apos;</em> on the confirmation screen to receive our verified UPI QR code before dispatch!
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Order Summary & Place Order Action */}
+          {/* Right Column: Order Summary & Confirm Order Action */}
           <div className="lg:col-span-5 space-y-6">
             <div className="bg-white p-6 rounded-2xl border border-[#E8E2D8] shadow-xs space-y-4 sticky top-24">
               <h3 className="text-xs font-bold text-[#1C201D] uppercase tracking-wider pb-3 border-b border-[#E8E2D8]">
-                Order Summary ({cart.length} {cart.length === 1 ? 'item' : 'items'})
+                Order Summary ({cart.length} {cart.length === 1 ? 'piece' : 'pieces'})
               </h3>
 
               {/* Items preview list */}
@@ -421,53 +406,35 @@ export default function CheckoutPage() {
                   </div>
                 )}
 
-                {upiPrepaidDiscount > 0 && (
-                  <div className="flex justify-between text-[#1E6B35] font-semibold">
-                    <span className="flex items-center space-x-1">
-                      <Zap className="w-3.5 h-3.5" />
-                      <span>Instant 5% UPI Discount</span>
-                    </span>
-                    <span>-₹{upiPrepaidDiscount}</span>
-                  </div>
-                )}
-
                 <div className="flex justify-between text-[#5F6762]">
-                  <span>Shipping</span>
+                  <span>Shipping across India</span>
                   <span className="font-semibold text-[#1C201D]">
                     {shippingFee === 0 ? <strong className="text-[#1E6B35]">FREE</strong> : `₹${shippingFee}`}
                   </span>
                 </div>
 
                 {/* COD Handling Fee Line */}
-                {paymentMethod === 'cod' && (
-                  <div className="flex justify-between text-[#D9480F] font-semibold">
-                    <span>COD Courier Handling Fee</span>
-                    <span>+₹{BRAND_CONFIG.codHandlingFee}</span>
-                  </div>
-                )}
+                <div className="flex justify-between text-[#D9480F] font-semibold">
+                  <span>COD Courier Handling Fee</span>
+                  <span>+₹{codFee}</span>
+                </div>
 
                 <div className="flex justify-between items-baseline pt-3 border-t border-[#E8E2D8]">
-                  <span className="text-sm font-bold text-[#1C201D]">Total Payable</span>
+                  <span className="text-sm font-bold text-[#1C201D]">Total Amount to Pay</span>
                   <span className="text-2xl font-black text-[#1A3B2B]">₹{finalPayable}</span>
                 </div>
+                <p className="text-[10px] text-[#7A8580] text-right">
+                  Payable in cash or courier scanner upon delivery
+                </p>
               </div>
 
               {/* Final Submit Button */}
               <button
                 type="submit"
-                className="w-full bg-[#1A3B2B] hover:bg-[#2A5A43] text-white font-bold py-4 px-4 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center space-x-2 transition-all shadow-xl"
+                className="w-full bg-[#1A3B2B] hover:bg-[#2A5A43] text-white font-bold py-4 px-4 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center space-x-2 transition-all shadow-xl hover:-translate-y-0.5"
               >
-                {paymentMethod === 'upi_razorpay' ? (
-                  <>
-                    <Zap className="w-4 h-4 text-[#E7C875]" />
-                    <span>Pay with UPI (₹{finalPayable})</span>
-                  </>
-                ) : (
-                  <>
-                    <Truck className="w-4 h-4 text-[#C29B38]" />
-                    <span>Confirm COD Order (₹{finalPayable})</span>
-                  </>
-                )}
+                <Truck className="w-4 h-4 text-[#C29B38]" />
+                <span>Confirm Cash on Delivery Order (₹{finalPayable})</span>
               </button>
 
               <div className="text-center text-[10px] text-[#7A8580] pt-1 space-y-1">
@@ -482,16 +449,39 @@ export default function CheckoutPage() {
         </form>
       </div>
 
-      {/* Razorpay Pure UPI Simulation Modal */}
-      <RazorpayModal
-        isOpen={isRazorpayOpen}
-        onClose={() => setIsRazorpayOpen(false)}
-        amount={finalPayable}
-        customerName={formData.fullName}
-        customerEmail={formData.email}
-        customerPhone={formData.phone}
-        onSuccess={(payId) => completeOrderPlacement(payId)}
-      />
+      {/* Online UPI Coming Soon Modal Notice */}
+      {showUpiNotice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl border border-neutral-200 animate-in zoom-in-95">
+            <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center mx-auto">
+              <Clock className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="font-bold text-base text-[#1C201D]">Online UPI Gateway Coming Soon</h3>
+              <p className="text-xs text-[#5F6762] mt-1.5 leading-relaxed">
+                Direct automated online gateway is currently undergoing merchant banking KYC verification.
+              </p>
+            </div>
+
+            <div className="bg-[#FAF8F5] p-3 rounded-xl border border-[#E8E2D8] text-xs text-[#1C201D] text-left space-y-1">
+              <p className="font-semibold text-[#1A3B2B]">How to order today:</p>
+              <p className="text-[11px] text-[#5F6762]">
+                1. Place your order via <strong>Cash on Delivery (COD)</strong> right now.
+              </p>
+              <p className="text-[11px] text-[#5F6762]">
+                2. If you prefer to pay online via UPI, simply message us on WhatsApp with your Order ID and we will share our UPI QR code directly!
+              </p>
+            </div>
+
+            <button
+              onClick={() => setShowUpiNotice(false)}
+              className="w-full bg-[#1A3B2B] text-white text-xs font-bold py-3 rounded-xl uppercase tracking-wider"
+            >
+              Got It, Proceed with COD
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -166,17 +166,26 @@ export default function OrderSuccessPage() {
                   ))}
                 </div>
 
-                <div className="bg-[#FAF8F5] p-3 rounded-xl space-y-1.5 text-xs border border-[#E8E2D8]">
+                <div className="bg-[#FAF8F5] p-4 rounded-xl space-y-2 text-xs border border-[#E8E2D8]">
                   <div className="flex justify-between text-[#5F6762]">
                     <span>Payment Method</span>
-                    <span className="font-semibold text-[#1C201D] uppercase">
-                      {order.paymentMethod === 'upi_razorpay' ? 'UPI / Prepaid (Paid)' : 'Cash on Delivery'}
+                    <span className="font-bold text-[#1C201D] uppercase">
+                      Cash on Delivery (COD)
                     </span>
                   </div>
-                  <div className="flex justify-between font-bold text-[#1C201D] pt-1 border-t border-[#E8E2D8]">
-                    <span>Total Paid / Payable</span>
-                    <span className="text-[#1A3B2B] text-sm">₹{order.total}</span>
+                  <div className="flex justify-between text-[#5F6762]">
+                    <span>Payment Status</span>
+                    <span className="bg-[#FFF4E5] text-[#D9480F] font-bold px-2 py-0.5 rounded text-[11px] border border-[#FFD8A8]">
+                      Payment Due at Doorstep
+                    </span>
                   </div>
+                  <div className="flex justify-between font-bold text-[#1C201D] pt-2 border-t border-[#E8E2D8]">
+                    <span>Total Cash to Pay Courier</span>
+                    <span className="text-[#1A3B2B] text-base font-black">₹{order.total}</span>
+                  </div>
+                  <p className="text-[10px] text-[#7A8580] pt-1 leading-relaxed">
+                    * Includes ₹{order.codFee || BRAND_CONFIG.codHandlingFee} courier handling fee. To pay via UPI before dispatch instead, send your Order ID ({orderId}) on WhatsApp!
+                  </p>
                 </div>
               </div>
             )}

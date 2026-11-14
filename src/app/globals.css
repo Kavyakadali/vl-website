@@ -46,11 +46,10 @@ html {
   background: #C29B38;
 }
 
-/* Animations & glass effects */
+/* Header solid styling - prevents background text bleed-through */
 .glass-header {
-  background: rgba(250, 248, 245, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background-color: #FAF8F5;
+  box-shadow: 0 1px 3px 0 rgba(26, 59, 43, 0.04);
 }
 
 .luxury-shadow {

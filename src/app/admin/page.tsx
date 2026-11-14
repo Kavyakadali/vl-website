@@ -257,9 +257,9 @@ export default function AdminPage() {
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                             o.paymentMethod === 'upi_razorpay'
                               ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-amber-100 text-amber-800'
+                              : 'bg-amber-100 text-amber-900 border border-amber-200'
                           }`}>
-                            {o.paymentMethod === 'upi_razorpay' ? 'UPI Paid (Razorpay)' : 'Cash on Delivery'}
+                            {o.paymentMethod === 'upi_razorpay' ? 'Prepaid (UPI)' : 'COD (Payment Pending)'}
                           </span>
                         </div>
 
