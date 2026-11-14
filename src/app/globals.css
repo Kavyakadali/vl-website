@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --brand-primary: #1A3B2B;
+    --brand-primary-light: #2A5A43;
+    --brand-gold: #C29B38;
+    --brand-gold-light: #FBF7EE;
+    --brand-terracotta: #9C3B24;
+    --brand-bg: #FAF8F5;
+    --brand-surface: #FFFFFF;
+    --brand-border: #E8E2D8;
+    --brand-text: #1C201D;
+    --brand-muted: #5F6762;
+  }
+
+  body {
+    background-color: var(--brand-bg);
+    color: var(--brand-text);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Custom smooth scroll and luxury scrollbar */
+html {
+  scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FAF8F5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D8D0C5;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #C29B38;
+}
+
+/* Animations & glass effects */
+.glass-header {
+  background: rgba(250, 248, 245, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.luxury-shadow {
+  box-shadow: 0 10px 30px -10px rgba(26, 59, 43, 0.08);
+}
+
+.card-hover-effect {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-hover-effect:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px -12px rgba(26, 59, 43, 0.14);
+}
+
